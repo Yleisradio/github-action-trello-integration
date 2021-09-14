@@ -1,0 +1,32 @@
+{
+  "name": "Yle Github Action: Trello Integration",
+  "version": "1.0.0",
+  "description": "Github workflow action to make Trello cards abide what happens in Github",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --write .",
+    "lint": "eslint --ignore-path .gitignore --ext '.js, .ts, .jsx, .tsx .json .eta' .",
+    "lint:fix": "eslint --ignore-path .gitignore --ext '.js, .ts, .jsx, .tsx .json .eta' . --fix "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yleisradio/yle-gh-action--trello-integration.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "GPL v2.0",
+  "bugs": {
+    "url": "https://github.com/Yleisradio/yle-gh-action--trello-integration/issues"
+  },
+  "homepage": "https://github.com/Yleisradio/yle-gh-action--trello-integration#readme",
+  "dependencies": {
+    "@actions/core": "^1.5.0",
+    "@actions/github": "^5.0.0",
+    "node-fetch": "^2.6.2"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0",
+    "prettier": "^2.4.0"
+  }
+}
