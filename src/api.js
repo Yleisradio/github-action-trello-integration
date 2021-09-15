@@ -5,8 +5,9 @@ import { boardId } from './utils';
 const apiBaseUrl = 'https://api.trello.com/1';
 const cache = {
   boardLabels: [],
-  boardLists: [],
   boardMembers: [],
+  boardLists: [],
+  listCards: [],
 };
 const debug = getInput('verbose');
 const trelloBoard = boardId();
@@ -148,10 +149,11 @@ function getCardsOfList(listId) {
       }
       fetch(buildApiUri(endpoint), options)
         .then((body) => {
+          const json = body.json();
           if (debug) {
-            console.log(`getListsOnBoard got response:`, body.json());
+            console.log(`getListsOnBoard got response:`, json);
           }
-          cache.listCards[listId] = resolve(body.json());
+          cache.listCards[listId] = resolve(json);
           return cache.listCards[listId];
         })
         .catch((error) => reject(error));
@@ -192,10 +194,11 @@ function createCard(listId, params) {
 
     fetch(buildApiUri(endpoint), options)
       .then((body) => {
+        const json = body.json();
         if (debug) {
-          console.log(`getListsOnBoard got response:`, body.json());
+          console.log(`getListsOnBoard got response:`, json);
         }
-        return resolve(body.json());
+        return resolve(json);
       })
       .catch((error) => reject(error));
   });
