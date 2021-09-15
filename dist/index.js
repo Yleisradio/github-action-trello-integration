@@ -6408,10 +6408,13 @@ const validateListExistsOnBoard = (listId) => {
 };
 
 const boardId = () => {
-  if (!validateIdPattern(process.env['TRELLO_BOARD_ID'])) {
+  if (typeof process.env.TRELLO_BOARD_ID === 'undefined') {
+    return 'invalid';
+  }
+  if (!validateIdPattern(process.env.TRELLO_BOARD_ID)) {
     throw Error('Board ID is not valid.');
   }
-  return process.env['TRELLO_BOARD_ID'];
+  return process.env.TRELLO_BOARD_ID;
 };
 
 
@@ -6442,8 +6445,8 @@ const buildApiUri = (endpoint) => `${apiBaseUrl}/${endpoint}`;
  * @returns object
  */
 const apiBaseHeaders = () => {
-  const apiKey = process.env['TRELLO_API_KEY'];
-  const apiToken = process.env['TRELLO_API_TOKEN'];
+  const apiKey = process.env.TRELLO_API_KEY;
+  const apiToken = process.env.TRELLO_API_TOKEN;
   if (!apiKey || !apiToken) {
     throw Error('Trello API key and/or token is missing.');
   }
@@ -6723,6 +6726,7 @@ function addUrlSourceToCard(cardId, url) {
 
 
 
+console.log(JSON.stringify(process.env, undefined, 2));
 try {
   const action = (0,core.getInput)('action');
   if (!action) {
@@ -6746,7 +6750,7 @@ try {
 
 function issueOpenedCreateCard() {
   try {
-    const listId = process.env['TRELLO_LIST_ID'];
+    const listId = process.env.TRELLO_LIST_ID;
     validateListExistsOnBoard(listId);
   } catch (error) {
     (0,core.setFailed)(error);
@@ -6799,10 +6803,10 @@ function issueOpenedCreateCard() {
 
 function pullRequestEventMoveCard() {
   try {
-    const haystackList = process.env['TRELLO_SOURCE_LIST_ID'];
+    const haystackList = process.env.TRELLO_SOURCE_LIST_ID;
     validateListExistsOnBoard(haystackList);
 
-    const targetList = process.env['TRELLO_TARGET_LIST_ID'];
+    const targetList = process.env.TRELLO_TARGET_LIST_ID;
     validateListExistsOnBoard(targetList);
 
     if (!haystackList || !targetList) {
@@ -6816,7 +6820,7 @@ function pullRequestEventMoveCard() {
 
   getMembersOfBoard(boardId)
     .then(function (response) {
-      if (process.env['TRELLO_SYNC_BOARD_MEMBERS'] || false) {
+      if (process.env.TRELLO_SYNC_BOARD_MEMBERS || false) {
         const prReviewers = pullRequest.requested_reviewers.map((reviewer) => reviewer.login);
         const members = response;
         const additionalMemberIds = [];
