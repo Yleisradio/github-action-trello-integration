@@ -9,7 +9,7 @@ import {
   getCardAttachments,
   addUrlSourceToCard,
 } from './api';
-import { validateListExistsOnBoard } from './utils';
+import { validateListExistsOnBoard, boardId } from './utils';
 
 try {
   const action = getInput('action');

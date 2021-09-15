@@ -1,17 +1,10 @@
 import { getInput } from '@actions/core';
 import fetch from 'node-fetch';
-import { validateIdPattern } from './utils';
+import { boardId } from './utils';
 
 const apiBaseUrl = 'https://api.trello.com/1';
 const cache = {};
 const debug = getInput('verbose');
-
-const boardId = () => {
-  if (!validateIdPattern(process.env['TRELLO_BOARD_ID'])) {
-    throw Error('Board ID is not valid.');
-  }
-  return process.env['TRELLO_BOARD_ID'];
-};
 
 /**
  * Build API URI.
@@ -50,8 +43,6 @@ const apiBaseHeaders = () => {
  *
  * https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-labels-get
  *
- * @param {string} boardId
- *
  * @returns Object[]
  */
 function getLabelsOfBoard() {
@@ -81,8 +72,6 @@ function getLabelsOfBoard() {
  *
  * https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-members-get
  *
- * @param {string} boardId
- *
  * @returns Object[]
  */
 function getMembersOfBoard() {
@@ -111,8 +100,6 @@ function getMembersOfBoard() {
  * Gets all (open) lists on Board.
  *
  * https://developer.atlassian.com/cloud/trello/guides/rest-api/nested-resources/#lists-nested-resource
- *
- * @param {string} boardId
  *
  * @returns Object[]
  */

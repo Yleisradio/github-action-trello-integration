@@ -28,4 +28,11 @@ const validateListExistsOnBoard = (listId) => {
   }
 };
 
-export { validateIdPattern, validateListExistsOnBoard };
+const boardId = () => {
+  if (!validateIdPattern(process.env['TRELLO_BOARD_ID'])) {
+    throw Error('Board ID is not valid.');
+  }
+  return process.env['TRELLO_BOARD_ID'];
+};
+
+export { validateIdPattern, validateListExistsOnBoard, boardId };
