@@ -1,8 +1,9 @@
+import { getInput } from '@actions/core';
 import fetch from 'node-fetch';
 
 const apiBaseUrl = 'https://api.trello.com/1';
 const cache = {};
-const debug = process.env['TRELLO_ACTION_DEBUG'] || false;
+const debug = getInput('verbose');
 
 const boardId = () => {
   if (!validateIdPattern(process.env['TRELLO_BOARD_ID'])) {

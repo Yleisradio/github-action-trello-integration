@@ -1,4 +1,4 @@
-import { setFailed, setOutput } from '@actions/core';
+import { setFailed, getInput } from '@actions/core';
 import github from '@actions/github';
 import {
   getLabelsOfBoard,
@@ -12,7 +12,7 @@ import {
 } from './api';
 
 try {
-  const action = process.env['TRELLO_ACTION'];
+  const action = getInput('action');
   if (!action) {
     throw Error('Action is not set.');
   }

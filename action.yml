@@ -1,9 +1,12 @@
 name: 'Trello cards action'
 description: 'Act on a Trello card based on what happens in Github issue or pull request: New cards for new GH issues, move cards when PR is created or closed.'
 inputs:
-  trelloAction:
+  action:
     description: 'Desired action to do on a Card'
     required: true
+  verbose:
+    description: 'Controls verbosity of the logging. Use true for verbose, omit / empty string for suppressed logging.'
+    required: false
 runs:
   using: 'node12'
   main: 'index.js'
