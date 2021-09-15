@@ -70,7 +70,7 @@ function getLabelsOfBoard() {
       if (debug) {
         console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
       }
-      throw new Error(`Non-okay response with ${functionName}`);
+      return;
     } else {
       const data = response.json();
       if (debug) {
@@ -108,7 +108,7 @@ function getMembersOfBoard() {
       if (debug) {
         console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
       }
-      throw new Error(`Non-okay response with ${functionName}`);
+      return;
     } else {
       const data = response.json();
       if (debug) {
@@ -147,7 +147,7 @@ function getListsOnBoard() {
         console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
       }
       await response.ejectFromCache();
-      throw new Error(`Non-okay response with ${functionName}`);
+      return;
     } else {
       const data = response.json();
       if (debug) {
@@ -186,7 +186,7 @@ function getCardsOfList(listId) {
       if (debug) {
         console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
       }
-      throw new Error(`Non-okay response with ${functionName}`);
+      return;
     } else {
       const data = response.json();
       if (debug) {
@@ -239,7 +239,7 @@ function createCard(listId, params) {
       if (debug) {
         console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
       }
-      throw new Error(`Non-okay response with ${functionName}`);
+      return;
     } else {
       const data = response.json();
       if (debug) {
@@ -285,7 +285,7 @@ function updateCard(cardId, params) {
       if (debug) {
         console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
       }
-      throw new Error(`Non-okay response with ${functionName}`);
+      return;
     } else {
       const data = response.json();
       if (debug) {
@@ -325,7 +325,7 @@ function getCardAttachments(cardId) {
       if (debug) {
         console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
       }
-      throw new Error(`Non-okay response with ${functionName}`);
+      return;
     } else {
       const data = response.json();
       if (debug) {
@@ -374,7 +374,7 @@ function addUrlSourceToCard(cardId, url) {
       if (debug) {
         console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
       }
-      throw new Error(`Non-okay response with ${functionName}`);
+      return;
     } else {
       const data = response.json();
       if (debug) {

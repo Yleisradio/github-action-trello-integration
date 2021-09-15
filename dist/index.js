@@ -21147,7 +21147,7 @@ function getLabelsOfBoard() {
       if (api_debug) {
         console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
       }
-      throw new Error(`Non-okay response with ${functionName}`);
+      return;
     } else {
       const data = response.json();
       if (api_debug) {
@@ -21185,7 +21185,7 @@ function getMembersOfBoard() {
       if (api_debug) {
         console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
       }
-      throw new Error(`Non-okay response with ${functionName}`);
+      return;
     } else {
       const data = response.json();
       if (api_debug) {
@@ -21224,7 +21224,7 @@ function getListsOnBoard() {
         console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
       }
       await response.ejectFromCache();
-      throw new Error(`Non-okay response with ${functionName}`);
+      return;
     } else {
       const data = response.json();
       if (api_debug) {
@@ -21263,7 +21263,7 @@ function getCardsOfList(listId) {
       if (api_debug) {
         console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
       }
-      throw new Error(`Non-okay response with ${functionName}`);
+      return;
     } else {
       const data = response.json();
       if (api_debug) {
@@ -21316,7 +21316,7 @@ function createCard(listId, params) {
       if (api_debug) {
         console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
       }
-      throw new Error(`Non-okay response with ${functionName}`);
+      return;
     } else {
       const data = response.json();
       if (api_debug) {
@@ -21362,7 +21362,7 @@ function updateCard(cardId, params) {
       if (api_debug) {
         console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
       }
-      throw new Error(`Non-okay response with ${functionName}`);
+      return;
     } else {
       const data = response.json();
       if (api_debug) {
@@ -21402,7 +21402,7 @@ function getCardAttachments(cardId) {
       if (api_debug) {
         console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
       }
-      throw new Error(`Non-okay response with ${functionName}`);
+      return;
     } else {
       const data = response.json();
       if (api_debug) {
@@ -21451,7 +21451,7 @@ function addUrlSourceToCard(cardId, url) {
       if (api_debug) {
         console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
       }
-      throw new Error(`Non-okay response with ${functionName}`);
+      return;
     } else {
       const data = response.json();
       if (api_debug) {
