@@ -6377,6 +6377,7 @@ var github_default = /*#__PURE__*/__nccwpck_require__.n(github);
 var lib = __nccwpck_require__(462);
 var lib_default = /*#__PURE__*/__nccwpck_require__.n(lib);
 ;// CONCATENATED MODULE: ./utils.js
+
 /**
  * Validate Trello entity id.
  *
@@ -6526,7 +6527,7 @@ function getMembersOfBoard() {
  *
  * @returns Object[]
  */
-function api_getListsOnBoard() {
+function getListsOnBoard() {
   // We are only interested in open lists.
   const endpoint = `/object/${api_boardId}/lists??fields=all&filter==open`;
   const options = { ...apiBaseHeaders };
@@ -6535,7 +6536,7 @@ function api_getListsOnBoard() {
       if (api_debug) {
         console.log(`getListsOnBoard calling ${buildApiUri(endpoint)} with`, options);
       }
-      fetch(buildApiUri(endpoint), options)
+      lib_default()(buildApiUri(endpoint), options)
         .then((body) => {
           if (api_debug) {
             console.log(`getListsOnBoard got response:`, body.json());
