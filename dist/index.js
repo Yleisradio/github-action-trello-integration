@@ -6411,15 +6411,19 @@ const validateListExistsOnBoard = (listId) => {
 };
 
 const boardId = () => {
-  console.log(process.env.TRELLO_BOARD_ID);
-  console.log(process.env['TRELLO_BOARD_ID']);
-  console.log(validateIdPattern(process.env.TRELLO_BOARD_ID));
-  console.log(validateIdPattern(process.env['TRELLO_BOARD_ID']));
-  return (validateIdPattern(process.env.TRELLO_BOARD_ID) && process.env.TRELLO_BOARD_ID) || null;
+  if (validateIdPattern(process.env.TRELLO_BOARD_ID)) {
+    console.log('TRELLO_BOARD_ID pattern is valid.');
+    return process.env.TRELLO_BOARD_ID;
+  }
+  console.log('TRELLO_BOARD_ID pattern does not match the pattern.');
 };
-console.debug('boardId', boardId);
-console.debug('typeof boardId', typeof boardId);
-console.debug('boardId()', boardId());
+
+console.log({
+  boardId: boardId,
+  'typeof boardId': typeof boardId,
+  'boardId<>': boardId(),
+});
+
 
 
 ;// CONCATENATED MODULE: ./src/api.js
