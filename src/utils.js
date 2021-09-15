@@ -1,5 +1,7 @@
 import { getListsOnBoard } from './api';
 
+const debug = getInput('verbose');
+
 /**
  * Validate Trello entity id.
  *
@@ -33,17 +35,19 @@ const validateListExistsOnBoard = (listId) => {
 };
 
 const boardId = () => {
-  if (validateIdPattern(process.env.TRELLO_BOARD_ID)) {
-    console.log('TRELLO_BOARD_ID pattern is valid.');
+  if (
+    process &&
+    process.env &&
+    process.env.TRELLO_BOARD_ID &&
+    validateIdPattern(process.env.TRELLO_BOARD_ID)
+  ) {
+    if (debug) {
+      console.log('TRELLO_BOARD_ID pattern is valid: ' + process.env.TRELLO_BOARD_ID);
+    }
     return process.env.TRELLO_BOARD_ID;
   }
   console.log('TRELLO_BOARD_ID pattern does not match the pattern.');
+  return '';
 };
-
-console.log({
-  boardId: boardId,
-  'typeof boardId': typeof boardId,
-  'boardId<>': boardId(),
-});
 
 export { validateIdPattern, validateListExistsOnBoard, boardId };

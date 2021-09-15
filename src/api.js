@@ -3,7 +3,11 @@ import fetch from 'node-fetch';
 import { boardId } from './utils';
 
 const apiBaseUrl = 'https://api.trello.com/1';
-const cache = {};
+const cache = {
+  boardLabels: [],
+  boardLists: [],
+  boardMembers: [],
+};
 const debug = getInput('verbose');
 const trelloBoard = boardId();
 /**

@@ -134,12 +134,12 @@ function pullRequestEventMoveCard() {
           if (debug) {
             console.log('card_issue_numbers', JSON.stringify(card_issue_numbers, undefined, 2));
           }
-          // card_issue_numbers.forEach((element) => {});
-          // if (card_issue_number == prIssuesReferenced) {
-          //   cardId = card.id;
-          //   existingMemberIds = card.idMembers;
-          return false;
-          // }
+          card_issue_numbers.forEach((element) => {});
+          if ((card_issue_number == prIssuesReferenced.indexOf(card_issue_number)) !== -1) {
+            cardId = card.id;
+            existingMemberIds.push(card.idMembers);
+            return false;
+          }
         });
         const cardParams = {
           destinationListId: targetList,

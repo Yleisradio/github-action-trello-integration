@@ -6379,6 +6379,8 @@ var lib_default = /*#__PURE__*/__nccwpck_require__.n(lib);
 ;// CONCATENATED MODULE: ./src/utils.js
 
 
+const utils_debug = getInput('verbose');
+
 /**
  * Validate Trello entity id.
  *
@@ -6412,18 +6414,20 @@ const validateListExistsOnBoard = (listId) => {
 };
 
 const boardId = () => {
-  if (validateIdPattern(process.env.TRELLO_BOARD_ID)) {
-    console.log('TRELLO_BOARD_ID pattern is valid.');
+  if (
+    process &&
+    process.env &&
+    process.env.TRELLO_BOARD_ID &&
+    validateIdPattern(process.env.TRELLO_BOARD_ID)
+  ) {
+    if (utils_debug) {
+      console.log('TRELLO_BOARD_ID pattern is valid: ' + process.env.TRELLO_BOARD_ID);
+    }
     return process.env.TRELLO_BOARD_ID;
   }
   console.log('TRELLO_BOARD_ID pattern does not match the pattern.');
+  return '';
 };
-
-console.log({
-  boardId: boardId,
-  'typeof boardId': typeof boardId,
-  'boardId<>': boardId(),
-});
 
 
 
@@ -6433,7 +6437,11 @@ console.log({
 
 
 const apiBaseUrl = 'https://api.trello.com/1';
-const cache = {};
+const cache = {
+  boardLabels: [],
+  boardLists: [],
+  boardMembers: [],
+};
 const api_debug = (0,core.getInput)('verbose');
 const trelloBoard = boardId();
 /**
@@ -6857,12 +6865,12 @@ function pullRequestEventMoveCard() {
           if (debug) {
             console.log('card_issue_numbers', JSON.stringify(card_issue_numbers, undefined, 2));
           }
-          // card_issue_numbers.forEach((element) => {});
-          // if (card_issue_number == prIssuesReferenced) {
-          //   cardId = card.id;
-          //   existingMemberIds = card.idMembers;
-          return false;
-          // }
+          card_issue_numbers.forEach((element) => {});
+          if ((card_issue_number == prIssuesReferenced.indexOf(card_issue_number)) !== -1) {
+            cardId = card.id;
+            existingMemberIds.push(card.idMembers);
+            return false;
+          }
         });
         const cardParams = {
           destinationListId: targetList,
