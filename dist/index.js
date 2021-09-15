@@ -6417,7 +6417,9 @@ const boardId = () => {
   console.log(validateIdPattern(process.env['TRELLO_BOARD_ID']));
   return (validateIdPattern(process.env.TRELLO_BOARD_ID) && process.env.TRELLO_BOARD_ID) || null;
 };
-console.debug(boardId, typeof boardId, boardId());
+console.debug('boardId', boardId);
+console.debug('typeof boardId', typeof boardId);
+console.debug('boardId()', boardId());
 
 
 ;// CONCATENATED MODULE: ./src/api.js
