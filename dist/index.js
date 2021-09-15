@@ -21509,7 +21509,20 @@ function issueOpenedCreateCard() {
   const issueUrl = issue.html_url;
   const issueAssigneeNicks = issue.assignees.map((assignee) => assignee.login);
   const issueLabelNames = issue.labels.map((label) => label.name);
-
+  console.log(
+    JSON.stringify(
+      {
+        issueNumber: issueNumber,
+        issueTitle: issueTitle,
+        issueBody: issueBody,
+        issueUrl: issueUrl,
+        issueAssigneeNicks: issueAssigneeNicks,
+        issueLabelNames: issueLabelNames,
+      },
+      undefined,
+      2,
+    ),
+  );
   let trelloLabelIds = [];
   let memberIds = [];
 
