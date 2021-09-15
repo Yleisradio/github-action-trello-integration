@@ -1,5 +1,5 @@
 import { getInput } from '@actions/core';
-import fetch from 'node-fetch';
+import fetch from 'node-fetch-cache';
 import { boardId } from './utils';
 
 const apiBaseUrl = 'https://api.trello.com/1';
@@ -53,23 +53,31 @@ const apiBaseHeaders = () => {
 function getLabelsOfBoard() {
   const endpoint = `boards/${trelloBoard}/labels`;
   const options = { ...apiBaseHeaders };
-  if (!cache.boardLabels[trelloBoard]) {
-    cache.boardLabels[trelloBoard] = new Promise(function (resolve, reject) {
-      if (debug) {
-        console.log(`getLabelsOfBoard calling ${buildApiUri(endpoint)} with`, options);
-      }
-      fetch(buildApiUri(endpoint), options)
-        .then((body) => {
-          if (debug) {
-            console.log(`getLabelsOfBoard got response:`, body.json());
-          }
-          cache.boardLabels[trelloBoard] = resolve(body.json());
-          return cache.boardLabels[trelloBoard];
-        })
-        .catch((error) => reject(error));
-    });
+  const functionName = arguments.callee.toString() + '()';
+
+  if (debug) {
+    console.log(
+      ` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(
+        options,
+        undefined,
+        2,
+      )}`,
+    );
   }
-  return cache.boardLabels[trelloBoard];
+  fetch(buildApiUri(endpoint), options)
+    .then(async (response) => {
+      if (!response.ok) {
+        await response.ejectFromCache();
+        throw new Error(`Non-okay response with ${functionName}`);
+      } else {
+        const data = response.json();
+        if (debug) {
+          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
+        }
+        return data;
+      }
+    })
+    .catch((error) => reject(error));
 }
 
 /**
@@ -82,23 +90,31 @@ function getLabelsOfBoard() {
 function getMembersOfBoard() {
   const endpoint = `boards/${trelloBoard}/members`;
   const options = { ...apiBaseHeaders };
-  if (!cache.boardMembers[trelloBoard]) {
-    cache.boardMembers[trelloBoard] = new Promise(function (resolve, reject) {
-      if (debug) {
-        console.log(`getMembersOfBoard calling ${buildApiUri(endpoint)} with`, options);
-      }
-      fetch(buildApiUri(endpoint), options)
-        .then((body) => {
-          if (debug) {
-            console.log(`getMembersOfBoard got response:`, body.json());
-          }
-          cache.boardMembers[trelloBoard] = resolve(body.json());
-          return cache.boardMembers[trelloBoard];
-        })
-        .catch((error) => reject(error));
-    });
+  const functionName = arguments.callee.toString() + '()';
+
+  if (debug) {
+    console.log(
+      ` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(
+        options,
+        undefined,
+        2,
+      )}`,
+    );
   }
-  return cache.boardMembers[trelloBoard];
+  fetch(buildApiUri(endpoint), options)
+    .then(async (response) => {
+      if (!response.ok) {
+        await response.ejectFromCache();
+        throw new Error(`Non-okay response with ${functionName}`);
+      } else {
+        const data = response.json();
+        if (debug) {
+          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
+        }
+        return data;
+      }
+    })
+    .catch((error) => reject(error));
 }
 
 /**
@@ -112,23 +128,31 @@ function getListsOnBoard() {
   // We are only interested in open lists.
   const endpoint = `/object/${trelloBoard}/lists??fields=all&filter==open`;
   const options = { ...apiBaseHeaders };
-  if (!cache.boardLists[trelloBoard]) {
-    cache.boardLists[trelloBoard] = new Promise(function (resolve, reject) {
-      if (debug) {
-        console.log(`getListsOnBoard calling ${buildApiUri(endpoint)} with`, options);
-      }
-      fetch(buildApiUri(endpoint), options)
-        .then((body) => {
-          if (debug) {
-            console.log(`getListsOnBoard got response:`, body.json());
-          }
-          cache.boardLists[trelloBoard] = resolve(body.json());
-          return cache.boardLists[trelloBoard];
-        })
-        .catch((error) => reject(error));
-    });
+  const functionName = arguments.callee.toString() + '()';
+
+  if (debug) {
+    console.log(
+      ` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(
+        options,
+        undefined,
+        2,
+      )}`,
+    );
   }
-  return cache.boardLists[trelloBoard];
+  fetch(buildApiUri(endpoint), options)
+    .then(async (response) => {
+      if (!response.ok) {
+        await response.ejectFromCache();
+        throw new Error(`Non-okay response with ${functionName}`);
+      } else {
+        const data = response.json();
+        if (debug) {
+          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
+        }
+        return data;
+      }
+    })
+    .catch((error) => reject(error));
 }
 
 /**
@@ -142,24 +166,31 @@ function getListsOnBoard() {
 function getCardsOfList(listId) {
   const endpoint = `lists/${listId}/cards`;
   const options = { ...apiBaseHeaders };
-  if (!cache.listCards[listId]) {
-    cache.listCards[listId] = new Promise(function (resolve, reject) {
-      if (debug) {
-        console.log(`getListsOnBoard calling ${buildApiUri(endpoint)} with`, options);
-      }
-      fetch(buildApiUri(endpoint), options)
-        .then((body) => {
-          const json = body.json();
-          if (debug) {
-            console.log(`getListsOnBoard got response:`, json);
-          }
-          cache.listCards[listId] = resolve(json);
-          return cache.listCards[listId];
-        })
-        .catch((error) => reject(error));
-    });
+  const functionName = arguments.callee.toString() + '()';
+
+  if (debug) {
+    console.log(
+      ` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(
+        options,
+        undefined,
+        2,
+      )}`,
+    );
   }
-  return cache.listCards[listId];
+  fetch(buildApiUri(endpoint), options)
+    .then(async (response) => {
+      if (!response.ok) {
+        await response.ejectFromCache();
+        throw new Error(`Non-okay response with ${functionName}`);
+      } else {
+        const data = response.json();
+        if (debug) {
+          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
+        }
+        return data;
+      }
+    })
+    .catch((error) => reject(error));
 }
 /**
  * Create a new Card
@@ -187,21 +218,31 @@ function createCard(listId, params) {
     },
     json: true,
   };
-  return new Promise(function (resolve, reject) {
-    if (debug) {
-      console.log(`createCard calling: ${buildApiUri(endpoint)} with `, options);
-    }
+  const functionName = arguments.callee.toString() + '()';
 
-    fetch(buildApiUri(endpoint), options)
-      .then((body) => {
-        const json = body.json();
+  if (debug) {
+    console.log(
+      ` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(
+        options,
+        undefined,
+        2,
+      )}`,
+    );
+  }
+  fetch(buildApiUri(endpoint), options)
+    .then(async (response) => {
+      if (!response.ok) {
+        await response.ejectFromCache();
+        throw new Error(`Non-okay response with ${functionName}`);
+      } else {
+        const data = response.json();
         if (debug) {
-          console.log(`getListsOnBoard got response:`, json);
+          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
         }
-        return resolve(json);
-      })
-      .catch((error) => reject(error));
-  });
+        return data;
+      }
+    })
+    .catch((error) => reject(error));
 }
 /**
  * Update the contents of a Card.
@@ -222,20 +263,31 @@ function updateCard(cardId, params) {
       idMembers: params.memberIds,
     },
   };
-  return new Promise(function (resolve, reject) {
-    if (debug) {
-      console.log(`updateCard calling: ${buildApiUri(endpoint)} with `, options);
-    }
+  const functionName = arguments.callee.toString() + '()';
 
-    fetch(buildApiUri(endpoint), options)
-      .then((body) => {
+  if (debug) {
+    console.log(
+      ` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(
+        options,
+        undefined,
+        2,
+      )}`,
+    );
+  }
+  fetch(buildApiUri(endpoint), options)
+    .then(async (response) => {
+      if (!response.ok) {
+        await response.ejectFromCache();
+        throw new Error(`Non-okay response with ${functionName}`);
+      } else {
+        const data = response.json();
         if (debug) {
-          console.log(`updateCard got response:`, body.json());
+          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
         }
-        return resolve(body.json());
-      })
-      .catch((error) => reject(error));
-  });
+        return data;
+      }
+    })
+    .catch((error) => reject(error));
 }
 
 /**
@@ -250,20 +302,31 @@ function getCardAttachments(cardId) {
   const endpoint = `cards/${cardId}/attachments`;
   const options = { ...apiBaseHeaders };
 
-  return new Promise(function (resolve, reject) {
-    if (debug) {
-      console.log(`getCardAttachments calling: ${buildApiUri(endpoint)} with `, options);
-    }
+  const functionName = arguments.callee.toString() + '()';
 
-    fetch(buildApiUri(endpoint), options)
-      .then((body) => {
+  if (debug) {
+    console.log(
+      ` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(
+        options,
+        undefined,
+        2,
+      )}`,
+    );
+  }
+  fetch(buildApiUri(endpoint), options)
+    .then(async (response) => {
+      if (!response.ok) {
+        await response.ejectFromCache();
+        throw new Error(`Non-okay response with ${functionName}`);
+      } else {
+        const data = response.json();
         if (debug) {
-          console.log(`getCardAttachments got response:`, body.json());
+          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
         }
-        return resolve(body.json());
-      })
-      .catch((error) => reject(error));
-  });
+        return data;
+      }
+    })
+    .catch((error) => reject(error));
 }
 
 /**
@@ -287,20 +350,31 @@ function addUrlSourceToCard(cardId, url) {
       url: url,
     },
   };
-  return new Promise(function (resolve, reject) {
-    if (debug) {
-      console.log(`addUrlSourceToCard calling: ${buildApiUri(endpoint)} with `, options);
-    }
+  const functionName = arguments.callee.toString() + '()';
 
-    fetch(buildApiUri(endpoint), options)
-      .then((body) => {
+  if (debug) {
+    console.log(
+      ` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(
+        options,
+        undefined,
+        2,
+      )}`,
+    );
+  }
+  fetch(buildApiUri(endpoint), options)
+    .then(async (response) => {
+      if (!response.ok) {
+        await response.ejectFromCache();
+        throw new Error(`Non-okay response with ${functionName}`);
+      } else {
+        const data = response.json();
         if (debug) {
-          console.log(`addUrlSourceToCard got response:`, body.json());
+          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
         }
-        return resolve(body.json());
-      })
-      .catch((error) => reject(error));
-  });
+        return data;
+      }
+    })
+    .catch((error) => reject(error));
 }
 
 export {
