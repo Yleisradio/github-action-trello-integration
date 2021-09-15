@@ -16,7 +16,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "GPL v2.0",
+  "license": "GPL-2.0-or-later",
   "bugs": {
     "url": "https://github.com/Yleisradio/yle-gh-action--trello-integration/issues"
   },
