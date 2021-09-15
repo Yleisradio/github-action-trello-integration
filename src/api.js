@@ -64,20 +64,18 @@ function getLabelsOfBoard() {
       )}`,
     );
   }
-  fetch(buildApiUri(endpoint), options)
-    .then(async (response) => {
-      if (!response.ok) {
-        await response.ejectFromCache();
-        throw new Error(`Non-okay response with ${functionName}`);
-      } else {
-        const data = response.json();
-        if (debug) {
-          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-        }
-        return data;
+  fetch(buildApiUri(endpoint), options).then(async (response) => {
+    if (!response.ok) {
+      await response.ejectFromCache();
+      throw new Error(`Non-okay response with ${functionName}`);
+    } else {
+      const data = response.json();
+      if (debug) {
+        console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
       }
-    })
-    .catch((error) => reject(error));
+      return data;
+    }
+  });
 }
 
 /**
@@ -101,20 +99,18 @@ function getMembersOfBoard() {
       )}`,
     );
   }
-  fetch(buildApiUri(endpoint), options)
-    .then(async (response) => {
-      if (!response.ok) {
-        await response.ejectFromCache();
-        throw new Error(`Non-okay response with ${functionName}`);
-      } else {
-        const data = response.json();
-        if (debug) {
-          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-        }
-        return data;
+  fetch(buildApiUri(endpoint), options).then(async (response) => {
+    if (!response.ok) {
+      await response.ejectFromCache();
+      throw new Error(`Non-okay response with ${functionName}`);
+    } else {
+      const data = response.json();
+      if (debug) {
+        console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
       }
-    })
-    .catch((error) => reject(error));
+      return data;
+    }
+  });
 }
 
 /**
@@ -139,20 +135,18 @@ function getListsOnBoard() {
       )}`,
     );
   }
-  fetch(buildApiUri(endpoint), options)
-    .then(async (response) => {
-      if (!response.ok) {
-        await response.ejectFromCache();
-        throw new Error(`Non-okay response with ${functionName}`);
-      } else {
-        const data = response.json();
-        if (debug) {
-          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-        }
-        return data;
+  fetch(buildApiUri(endpoint), options).then(async (response) => {
+    if (!response.ok) {
+      await response.ejectFromCache();
+      throw new Error(`Non-okay response with ${functionName}`);
+    } else {
+      const data = response.json();
+      if (debug) {
+        console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
       }
-    })
-    .catch((error) => reject(error));
+      return data;
+    }
+  });
 }
 
 /**
@@ -177,20 +171,18 @@ function getCardsOfList(listId) {
       )}`,
     );
   }
-  fetch(buildApiUri(endpoint), options)
-    .then(async (response) => {
-      if (!response.ok) {
-        await response.ejectFromCache();
-        throw new Error(`Non-okay response with ${functionName}`);
-      } else {
-        const data = response.json();
-        if (debug) {
-          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-        }
-        return data;
+  fetch(buildApiUri(endpoint), options).then(async (response) => {
+    if (!response.ok) {
+      await response.ejectFromCache();
+      throw new Error(`Non-okay response with ${functionName}`);
+    } else {
+      const data = response.json();
+      if (debug) {
+        console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
       }
-    })
-    .catch((error) => reject(error));
+      return data;
+    }
+  });
 }
 /**
  * Create a new Card
@@ -229,20 +221,18 @@ function createCard(listId, params) {
       )}`,
     );
   }
-  fetch(buildApiUri(endpoint), options)
-    .then(async (response) => {
-      if (!response.ok) {
-        await response.ejectFromCache();
-        throw new Error(`Non-okay response with ${functionName}`);
-      } else {
-        const data = response.json();
-        if (debug) {
-          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-        }
-        return data;
+  fetch(buildApiUri(endpoint), options).then(async (response) => {
+    if (!response.ok) {
+      await response.ejectFromCache();
+      throw new Error(`Non-okay response with ${functionName}`);
+    } else {
+      const data = response.json();
+      if (debug) {
+        console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
       }
-    })
-    .catch((error) => reject(error));
+      return data;
+    }
+  });
 }
 /**
  * Update the contents of a Card.
@@ -274,20 +264,18 @@ function updateCard(cardId, params) {
       )}`,
     );
   }
-  fetch(buildApiUri(endpoint), options)
-    .then(async (response) => {
-      if (!response.ok) {
-        await response.ejectFromCache();
-        throw new Error(`Non-okay response with ${functionName}`);
-      } else {
-        const data = response.json();
-        if (debug) {
-          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-        }
-        return data;
+  fetch(buildApiUri(endpoint), options).then(async (response) => {
+    if (!response.ok) {
+      await response.ejectFromCache();
+      throw new Error(`Non-okay response with ${functionName}`);
+    } else {
+      const data = response.json();
+      if (debug) {
+        console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
       }
-    })
-    .catch((error) => reject(error));
+      return data;
+    }
+  });
 }
 
 /**
@@ -313,20 +301,18 @@ function getCardAttachments(cardId) {
       )}`,
     );
   }
-  fetch(buildApiUri(endpoint), options)
-    .then(async (response) => {
-      if (!response.ok) {
-        await response.ejectFromCache();
-        throw new Error(`Non-okay response with ${functionName}`);
-      } else {
-        const data = response.json();
-        if (debug) {
-          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-        }
-        return data;
+  fetch(buildApiUri(endpoint), options).then(async (response) => {
+    if (!response.ok) {
+      await response.ejectFromCache();
+      throw new Error(`Non-okay response with ${functionName}`);
+    } else {
+      const data = response.json();
+      if (debug) {
+        console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
       }
-    })
-    .catch((error) => reject(error));
+      return data;
+    }
+  });
 }
 
 /**
@@ -361,20 +347,18 @@ function addUrlSourceToCard(cardId, url) {
       )}`,
     );
   }
-  fetch(buildApiUri(endpoint), options)
-    .then(async (response) => {
-      if (!response.ok) {
-        await response.ejectFromCache();
-        throw new Error(`Non-okay response with ${functionName}`);
-      } else {
-        const data = response.json();
-        if (debug) {
-          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-        }
-        return data;
+  fetch(buildApiUri(endpoint), options).then(async (response) => {
+    if (!response.ok) {
+      await response.ejectFromCache();
+      throw new Error(`Non-okay response with ${functionName}`);
+    } else {
+      const data = response.json();
+      if (debug) {
+        console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
       }
-    })
-    .catch((error) => reject(error));
+      return data;
+    }
+  });
 }
 
 export {
