@@ -6388,7 +6388,10 @@ var lib_default = /*#__PURE__*/__nccwpck_require__.n(lib);
  *
  * @returns boolean
  */
-const validateIdPattern = (id) => id.match(/^[0-9a-fA-F]{24}$/);
+const validateIdPattern = (id) => {
+  const matches = id.match(/^[0-9a-fA-F]{24}$/);
+  return matches.length === 1 && matches[0] === id;
+};
 
 /**
  * Validate Trello list exists on board.
@@ -6408,21 +6411,9 @@ const validateListExistsOnBoard = (listId) => {
 };
 
 const boardId = () => {
-  if (typeof process === 'undefined') {
-    return 'invalid 1';
-  }
-  if (typeof process.env === 'undefined') {
-    return 'invalid 2';
-  }
-  if (typeof process.env.TRELLO_BOARD_ID === 'undefined') {
-    return 'invalid 3';
-  }
-  if (!validateIdPattern(process.env.TRELLO_BOARD_ID)) {
-    throw Error('Board ID is not valid.');
-  }
-  return process.env.TRELLO_BOARD_ID;
+  return (validateIdPattern(process.env.TRELLO_BOARD_ID) && process.env.TRELLO_BOARD_ID) || null;
 };
-console.debug(boardId, typeof boardId);
+console.debug(boardId, typeof boardId, boardId());
 
 
 ;// CONCATENATED MODULE: ./src/api.js
