@@ -137,6 +137,9 @@ function getListsOnBoard() {
   }
   fetch(buildApiUri(endpoint), options).then(async (response) => {
     if (!response.ok) {
+      if (debug) {
+        console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
+      }
       await response.ejectFromCache();
       throw new Error(`Non-okay response with ${functionName}`);
     } else {
