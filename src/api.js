@@ -87,7 +87,7 @@ function getLabelsOfBoard() {
  */
 function getMembersOfBoard() {
   const endpoint = `boards/${trelloBoard}/members`;
-  const options = { ...apiBaseHeaders };
+  const options = { ...apiBaseHeaders() };
   const functionName = 'getMembersOfBoard()';
 
   if (debug) {
@@ -123,7 +123,7 @@ function getMembersOfBoard() {
 function getListsOnBoard() {
   // We are only interested in open lists.
   const endpoint = `/object/${trelloBoard}/lists??fields=all&filter==open`;
-  const options = { ...apiBaseHeaders };
+  const options = { ...apiBaseHeaders() };
   const functionName = 'getListsOnBoard()';
 
   if (debug) {
@@ -138,7 +138,7 @@ function getListsOnBoard() {
   fetch(buildApiUri(endpoint), options).then(async (response) => {
     if (!response.ok) {
       if (debug) {
-        console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
+        console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
       }
       await response.ejectFromCache();
       throw new Error(`Non-okay response with ${functionName}`);
@@ -162,7 +162,7 @@ function getListsOnBoard() {
  */
 function getCardsOfList(listId) {
   const endpoint = `lists/${listId}/cards`;
-  const options = { ...apiBaseHeaders };
+  const options = { ...apiBaseHeaders() };
   const functionName = 'getCardsOfList()';
 
   if (debug) {
@@ -199,7 +199,7 @@ function getCardsOfList(listId) {
 function createCard(listId, params) {
   const endpoint = `cards`;
   const options = {
-    ...apiBaseHeaders,
+    ...apiBaseHeaders(),
     method: 'POST',
     url: buildApiUri(endpoint),
     form: {
@@ -249,7 +249,7 @@ function createCard(listId, params) {
 function updateCard(cardId, params) {
   const endpoint = `cards/${cardId}`;
   const options = {
-    ...apiBaseHeaders,
+    ...apiBaseHeaders(),
     method: 'PUT',
     form: {
       idList: params.destinationListId,
@@ -291,7 +291,7 @@ function updateCard(cardId, params) {
  */
 function getCardAttachments(cardId) {
   const endpoint = `cards/${cardId}/attachments`;
-  const options = { ...apiBaseHeaders };
+  const options = { ...apiBaseHeaders() };
 
   const functionName = 'getCardAttachments()';
 
@@ -330,7 +330,7 @@ function getCardAttachments(cardId) {
 function addUrlSourceToCard(cardId, url) {
   const endpoint = `cards/${cardId}/attachments`;
   const options = {
-    ...apiBaseHeaders,
+    ...apiBaseHeaders(),
     method: 'POST',
     headers: {
       Accept: 'application/json',
