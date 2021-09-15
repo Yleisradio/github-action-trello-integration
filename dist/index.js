@@ -6379,9 +6379,10 @@ var lib_default = /*#__PURE__*/__nccwpck_require__.n(lib);
 ;// CONCATENATED MODULE: ./api.js
 
 
+
 const apiBaseUrl = 'https://api.trello.com/1';
 const cache = {};
-const api_debug = process.env['TRELLO_ACTION_DEBUG'] || false;
+const api_debug = (0,core.getInput)('verbose');
 
 const api_boardId = () => {
   if (!validateIdPattern(process.env['TRELLO_BOARD_ID'])) {
@@ -6694,7 +6695,7 @@ function addUrlSourceToCard(cardId, url) {
 
 
 try {
-  const action = process.env['TRELLO_ACTION'];
+  const action = (0,core.getInput)('action');
   if (!action) {
     throw Error('Action is not set.');
   }

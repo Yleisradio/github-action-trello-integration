@@ -1,5 +1,5 @@
 {
-  "name": "Yle Github Action: Trello Integration",
+  "name": "yle-gh-action--trello-integration",
   "version": "1.0.0",
   "description": "Github workflow action to make Trello cards abide what happens in Github",
   "main": "dist/index.js",
