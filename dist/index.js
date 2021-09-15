@@ -6379,7 +6379,8 @@ var lib_default = /*#__PURE__*/__nccwpck_require__.n(lib);
 ;// CONCATENATED MODULE: ./src/utils.js
 
 
-const utils_debug = getInput('verbose');
+
+const utils_debug = (0,core.getInput)('verbose');
 
 /**
  * Validate Trello entity id.

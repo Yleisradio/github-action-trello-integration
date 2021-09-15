@@ -1,3 +1,4 @@
+import { getInput } from '@actions/core';
 import { getListsOnBoard } from './api';
 
 const debug = getInput('verbose');
