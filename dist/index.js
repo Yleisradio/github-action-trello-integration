@@ -6376,7 +6376,7 @@ var github_default = /*#__PURE__*/__nccwpck_require__.n(github);
 // EXTERNAL MODULE: ./node_modules/node-fetch/lib/index.js
 var lib = __nccwpck_require__(462);
 var lib_default = /*#__PURE__*/__nccwpck_require__.n(lib);
-;// CONCATENATED MODULE: ./utils.js
+;// CONCATENATED MODULE: ./src/utils.js
 
 
 /**
@@ -6416,7 +6416,7 @@ const boardId = () => {
 
 
 
-;// CONCATENATED MODULE: ./api.js
+;// CONCATENATED MODULE: ./src/api.js
 
 
 
@@ -6717,7 +6717,7 @@ function addUrlSourceToCard(cardId, url) {
 
 
 
-;// CONCATENATED MODULE: ./index.js
+;// CONCATENATED MODULE: ./src/index.js
 
 
 
