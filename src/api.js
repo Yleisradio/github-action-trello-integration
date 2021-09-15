@@ -17,7 +17,7 @@ const trelloBoard = boardId();
  * @param {string} endpoint
  * @returns string
  */
-const buildApiUri = (endpoint) => `${apiBaseUrl}/${endpoint}`;
+const buildApiUri = (endpoint) => `${apiBaseUrl}${endpoint}`;
 
 /**
  * Base headers for REST API  authentication et al.
@@ -51,7 +51,7 @@ const apiBaseHeaders = () => {
  * @returns Object[]
  */
 function getLabelsOfBoard() {
-  const endpoint = `boards/${trelloBoard}/labels`;
+  const endpoint = `/boards/${trelloBoard}/labels`;
   const options = { ...apiBaseHeaders };
   const functionName = 'getLabelsOfBoard()';
 
@@ -89,7 +89,7 @@ function getLabelsOfBoard() {
  * @returns Object[]
  */
 function getMembersOfBoard() {
-  const endpoint = `boards/${trelloBoard}/members`;
+  const endpoint = `/boards/${trelloBoard}/members`;
   const options = { ...apiBaseHeaders() };
   const functionName = 'getMembersOfBoard()';
 
@@ -167,7 +167,7 @@ function getListsOnBoard() {
  * @returns
  */
 function getCardsOfList(listId) {
-  const endpoint = `lists/${listId}/cards`;
+  const endpoint = `/lists/${listId}/cards`;
   const options = { ...apiBaseHeaders() };
   const functionName = 'getCardsOfList()';
 
@@ -206,7 +206,7 @@ function getCardsOfList(listId) {
  * @returns Card
  */
 function createCard(listId, params) {
-  const endpoint = `cards`;
+  const endpoint = `/cards`;
   const options = {
     ...apiBaseHeaders(),
     method: 'POST',
@@ -259,7 +259,7 @@ function createCard(listId, params) {
  * @returns
  */
 function updateCard(cardId, params) {
-  const endpoint = `cards/${cardId}`;
+  const endpoint = `/cards/${cardId}`;
   const options = {
     ...apiBaseHeaders(),
     method: 'PUT',
@@ -305,7 +305,7 @@ function updateCard(cardId, params) {
  * @returns Attachment[]
  */
 function getCardAttachments(cardId) {
-  const endpoint = `cards/${cardId}/attachments`;
+  const endpoint = `/cards/${cardId}/attachments`;
   const options = { ...apiBaseHeaders() };
 
   const functionName = 'getCardAttachments()';
@@ -346,7 +346,7 @@ function getCardAttachments(cardId) {
  * @returns
  */
 function addUrlSourceToCard(cardId, url) {
-  const endpoint = `cards/${cardId}/attachments`;
+  const endpoint = `/cards/${cardId}/attachments`;
   const options = {
     ...apiBaseHeaders(),
     method: 'POST',

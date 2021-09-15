@@ -35,14 +35,6 @@ try {
 }
 
 function issueOpenedCreateCard() {
-  try {
-    const listId = process.env.TRELLO_LIST_ID;
-    validateListExistsOnBoard(listId);
-  } catch (error) {
-    setFailed(error);
-    return;
-  }
-
   const issue = github.context.payload.issue;
   const issueNumber = issue.number;
   const issueTitle = issue.title;
@@ -64,6 +56,13 @@ function issueOpenedCreateCard() {
       2,
     ),
   );
+  try {
+    const listId = process.env.TRELLO_LIST_ID;
+    validateListExistsOnBoard(listId);
+  } catch (error) {
+    setFailed(error);
+    return;
+  }
   let trelloLabelIds = [];
   let memberIds = [];
 
