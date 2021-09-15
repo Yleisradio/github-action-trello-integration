@@ -29,10 +29,13 @@ const validateListExistsOnBoard = (listId) => {
 };
 
 const boardId = () => {
-  if (!validateIdPattern(process.env['TRELLO_BOARD_ID'])) {
+  if (typeof process.env.TRELLO_BOARD_ID === 'undefined') {
+    return 'invalid';
+  }
+  if (!validateIdPattern(process.env.TRELLO_BOARD_ID)) {
     throw Error('Board ID is not valid.');
   }
-  return process.env['TRELLO_BOARD_ID'];
+  return process.env.TRELLO_BOARD_ID;
 };
 
 export { validateIdPattern, validateListExistsOnBoard, boardId };

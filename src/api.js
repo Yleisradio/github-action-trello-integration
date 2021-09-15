@@ -23,8 +23,8 @@ const buildApiUri = (endpoint) => `${apiBaseUrl}/${endpoint}`;
  * @returns object
  */
 const apiBaseHeaders = () => {
-  const apiKey = process.env['TRELLO_API_KEY'];
-  const apiToken = process.env['TRELLO_API_TOKEN'];
+  const apiKey = process.env.TRELLO_API_KEY;
+  const apiToken = process.env.TRELLO_API_TOKEN;
   if (!apiKey || !apiToken) {
     throw Error('Trello API key and/or token is missing.');
   }

@@ -11,6 +11,7 @@ import {
 } from './api';
 import { validateListExistsOnBoard, boardId } from './utils';
 
+console.log(JSON.stringify(process.env, undefined, 2));
 try {
   const action = getInput('action');
   if (!action) {
@@ -34,7 +35,7 @@ try {
 
 function issueOpenedCreateCard() {
   try {
-    const listId = process.env['TRELLO_LIST_ID'];
+    const listId = process.env.TRELLO_LIST_ID;
     validateListExistsOnBoard(listId);
   } catch (error) {
     setFailed(error);
@@ -87,10 +88,10 @@ function issueOpenedCreateCard() {
 
 function pullRequestEventMoveCard() {
   try {
-    const haystackList = process.env['TRELLO_SOURCE_LIST_ID'];
+    const haystackList = process.env.TRELLO_SOURCE_LIST_ID;
     validateListExistsOnBoard(haystackList);
 
-    const targetList = process.env['TRELLO_TARGET_LIST_ID'];
+    const targetList = process.env.TRELLO_TARGET_LIST_ID;
     validateListExistsOnBoard(targetList);
 
     if (!haystackList || !targetList) {
@@ -104,7 +105,7 @@ function pullRequestEventMoveCard() {
 
   getMembersOfBoard(boardId)
     .then(function (response) {
-      if (process.env['TRELLO_SYNC_BOARD_MEMBERS'] || false) {
+      if (process.env.TRELLO_SYNC_BOARD_MEMBERS || false) {
         const prReviewers = pullRequest.requested_reviewers.map((reviewer) => reviewer.login);
         const members = response;
         const additionalMemberIds = [];
