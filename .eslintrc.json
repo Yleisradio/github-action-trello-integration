@@ -1,10 +1,10 @@
 {
   "env": { "node": true, "jest": true },
   "parserOptions": {
-    "ecmaVersion": 9
+    "ecmaVersion": 9,
+    "sourceType": "module"
   },
   "plugins": ["promise"],
-  "extends": ["prettier"],
   "rules": {
     "import/extensions": "off",
     "object-shorthand": "off",

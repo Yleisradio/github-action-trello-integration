@@ -5,9 +5,9 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "format": "prettier --write .",
-    "lint": "eslint --ignore-path .gitignore --ext '.js, .ts, .jsx, .tsx .json .eta' .",
-    "lint:fix": "eslint --ignore-path .gitignore --ext '.js, .ts, .jsx, .tsx .json .eta' . --fix ",
+    "format": "prettier --write src/",
+    "lint": "eslint --ignore-path .gitignore --ext '.js, .ts, .jsx, .tsx .json .eta' src/",
+    "lint:fix": "npm run lint --  --fix ",
     "build": "ncc build src/index.js -o dist --license licenses.txt"
   },
   "repository": {
@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "eslint": "^7.32.0",
+    "eslint-plugin-promise": "^5.1.0",
     "prettier": "^2.4.0"
   }
 }
