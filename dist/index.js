@@ -6378,6 +6378,7 @@ var lib = __nccwpck_require__(462);
 var lib_default = /*#__PURE__*/__nccwpck_require__.n(lib);
 ;// CONCATENATED MODULE: ./utils.js
 
+
 /**
  * Validate Trello entity id.
  *
@@ -6406,6 +6407,13 @@ const validateListExistsOnBoard = (listId) => {
   }
 };
 
+const boardId = () => {
+  if (!validateIdPattern(process.env['TRELLO_BOARD_ID'])) {
+    throw Error('Board ID is not valid.');
+  }
+  return process.env['TRELLO_BOARD_ID'];
+};
+
 
 
 ;// CONCATENATED MODULE: ./api.js
@@ -6416,13 +6424,6 @@ const validateListExistsOnBoard = (listId) => {
 const apiBaseUrl = 'https://api.trello.com/1';
 const cache = {};
 const api_debug = (0,core.getInput)('verbose');
-
-const api_boardId = () => {
-  if (!validateIdPattern(process.env['TRELLO_BOARD_ID'])) {
-    throw Error('Board ID is not valid.');
-  }
-  return process.env['TRELLO_BOARD_ID'];
-};
 
 /**
  * Build API URI.
@@ -6461,15 +6462,13 @@ const apiBaseHeaders = () => {
  *
  * https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-labels-get
  *
- * @param {string} boardId
- *
  * @returns Object[]
  */
 function getLabelsOfBoard() {
-  const endpoint = `boards/${api_boardId}/labels`;
+  const endpoint = `boards/${boardId}/labels`;
   const options = { ...apiBaseHeaders };
-  if (!cache.boardLabels[api_boardId]) {
-    cache.boardLabels[api_boardId] = new Promise(function (resolve, reject) {
+  if (!cache.boardLabels[boardId]) {
+    cache.boardLabels[boardId] = new Promise(function (resolve, reject) {
       if (api_debug) {
         console.log(`getLabelsOfBoard calling ${buildApiUri(endpoint)} with`, options);
       }
@@ -6478,13 +6477,13 @@ function getLabelsOfBoard() {
           if (api_debug) {
             console.log(`getLabelsOfBoard got response:`, body.json());
           }
-          cache.boardLabels[api_boardId] = resolve(body.json());
-          return cache.boardLabels[api_boardId];
+          cache.boardLabels[boardId] = resolve(body.json());
+          return cache.boardLabels[boardId];
         })
         .catch((error) => reject(error));
     });
   }
-  return cache.boardLabels[api_boardId];
+  return cache.boardLabels[boardId];
 }
 
 /**
@@ -6492,15 +6491,13 @@ function getLabelsOfBoard() {
  *
  * https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-members-get
  *
- * @param {string} boardId
- *
  * @returns Object[]
  */
 function getMembersOfBoard() {
-  const endpoint = `boards/${api_boardId}/members`;
+  const endpoint = `boards/${boardId}/members`;
   const options = { ...apiBaseHeaders };
-  if (!cache.boardMembers[api_boardId]) {
-    cache.boardMembers[api_boardId] = new Promise(function (resolve, reject) {
+  if (!cache.boardMembers[boardId]) {
+    cache.boardMembers[boardId] = new Promise(function (resolve, reject) {
       if (api_debug) {
         console.log(`getMembersOfBoard calling ${buildApiUri(endpoint)} with`, options);
       }
@@ -6509,13 +6506,13 @@ function getMembersOfBoard() {
           if (api_debug) {
             console.log(`getMembersOfBoard got response:`, body.json());
           }
-          cache.boardMembers[api_boardId] = resolve(body.json());
-          return cache.boardMembers[api_boardId];
+          cache.boardMembers[boardId] = resolve(body.json());
+          return cache.boardMembers[boardId];
         })
         .catch((error) => reject(error));
     });
   }
-  return cache.boardMembers[api_boardId];
+  return cache.boardMembers[boardId];
 }
 
 /**
@@ -6523,16 +6520,14 @@ function getMembersOfBoard() {
  *
  * https://developer.atlassian.com/cloud/trello/guides/rest-api/nested-resources/#lists-nested-resource
  *
- * @param {string} boardId
- *
  * @returns Object[]
  */
 function getListsOnBoard() {
   // We are only interested in open lists.
-  const endpoint = `/object/${api_boardId}/lists??fields=all&filter==open`;
+  const endpoint = `/object/${boardId}/lists??fields=all&filter==open`;
   const options = { ...apiBaseHeaders };
-  if (!cache.boardLists[api_boardId]) {
-    cache.boardLists[api_boardId] = new Promise(function (resolve, reject) {
+  if (!cache.boardLists[boardId]) {
+    cache.boardLists[boardId] = new Promise(function (resolve, reject) {
       if (api_debug) {
         console.log(`getListsOnBoard calling ${buildApiUri(endpoint)} with`, options);
       }
@@ -6541,13 +6536,13 @@ function getListsOnBoard() {
           if (api_debug) {
             console.log(`getListsOnBoard got response:`, body.json());
           }
-          cache.boardLists[api_boardId] = resolve(body.json());
-          return cache.boardLists[api_boardId];
+          cache.boardLists[boardId] = resolve(body.json());
+          return cache.boardLists[boardId];
         })
         .catch((error) => reject(error));
     });
   }
-  return cache.boardLists[api_boardId];
+  return cache.boardLists[boardId];
 }
 
 /**
