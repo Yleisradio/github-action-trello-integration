@@ -1,3 +1,5 @@
+import { getListsOnBoard } from './api';
+
 /**
  * Validate Trello entity id.
  *

@@ -3,7 +3,6 @@ import github from '@actions/github';
 import {
   getLabelsOfBoard,
   getMembersOfBoard,
-  getListsOnBoard,
   getCardsOfList,
   createCard,
   updateCard,
