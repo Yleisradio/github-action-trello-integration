@@ -1,5 +1,6 @@
 import { getInput } from '@actions/core';
 import fetch from 'node-fetch';
+import { validateIdPattern } from './utils';
 
 const apiBaseUrl = 'https://api.trello.com/1';
 const cache = {};
