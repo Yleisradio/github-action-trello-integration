@@ -6376,7 +6376,39 @@ var github_default = /*#__PURE__*/__nccwpck_require__.n(github);
 // EXTERNAL MODULE: ./node_modules/node-fetch/lib/index.js
 var lib = __nccwpck_require__(462);
 var lib_default = /*#__PURE__*/__nccwpck_require__.n(lib);
+;// CONCATENATED MODULE: ./utils.js
+/**
+ * Validate Trello entity id.
+ *
+ * Trello ID's follow one pattern across all entities (cards, lists, boards).
+ *
+ * @param {string} id
+ *
+ * @returns boolean
+ */
+const validateIdPattern = (id) => id.match(/^[0-9a-fA-F]{24}$/);
+
+/**
+ * Validate Trello list exists on board.
+ *
+ * @param {string} listId
+ *
+ * @throws if lists is not on the board.
+ */
+const validateListExistsOnBoard = (listId) => {
+  if (!validateIdPattern(listId)) {
+    throw new Error('List id is not valid (pattern): ' + listId);
+  }
+  const lists = getListsOnBoard(boardId);
+  if (lists.indexOf(listId) === -1) {
+    throw new Error('List id is not on the board: ' + listId);
+  }
+};
+
+
+
 ;// CONCATENATED MODULE: ./api.js
+
 
 
 
@@ -6494,7 +6526,7 @@ function getMembersOfBoard() {
  *
  * @returns Object[]
  */
-function getListsOnBoard() {
+function api_getListsOnBoard() {
   // We are only interested in open lists.
   const endpoint = `/object/${api_boardId}/lists??fields=all&filter==open`;
   const options = { ...apiBaseHeaders };
@@ -6503,7 +6535,7 @@ function getListsOnBoard() {
       if (api_debug) {
         console.log(`getListsOnBoard calling ${buildApiUri(endpoint)} with`, options);
       }
-      lib_default()(buildApiUri(endpoint), options)
+      fetch(buildApiUri(endpoint), options)
         .then((body) => {
           if (api_debug) {
             console.log(`getListsOnBoard got response:`, body.json());
@@ -6694,6 +6726,7 @@ function addUrlSourceToCard(cardId, url) {
 
 
 
+
 try {
   const action = (0,core.getInput)('action');
   if (!action) {
@@ -6840,34 +6873,6 @@ function pullRequestEventMoveCard() {
       });
     });
 }
-
-/**
- * Validate Trello entity id.
- *
- * Trello ID's follow one pattern across all entities (cards, lists, boards).
- *
- * @param {string} id
- *
- * @returns boolean
- */
-const index_validateIdPattern = (id) => id.match(/^[0-9a-fA-F]{24}$/);
-
-/**
- * Validate Trello list exists on board.
- *
- * @param {string} listId
- *
- * @throws if lists is not on the board.
- */
-const validateListExistsOnBoard = (listId) => {
-  if (!index_validateIdPattern(listId)) {
-    throw new Error('List id is not valid (pattern): ' + listId);
-  }
-  const lists = getListsOnBoard(boardId);
-  if (lists.indexOf(listId) === -1) {
-    throw new Error('List id is not on the board: ' + listId);
-  }
-};
 
 })();
 
