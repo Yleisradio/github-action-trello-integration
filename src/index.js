@@ -11,7 +11,8 @@ import {
 } from './api';
 import { validateListExistsOnBoard, boardId } from './utils';
 
-console.log(JSON.stringify(process.env, undefined, 2));
+const trelloBoard = boardId();
+
 try {
   const action = getInput('action');
   if (!action) {
@@ -53,13 +54,13 @@ function issueOpenedCreateCard() {
   let trelloLabelIds = [];
   let memberIds = [];
 
-  const labels = getLabelsOfBoard(boardId).then(function (response) {
+  const labels = getLabelsOfBoard(trelloBoard).then(function (response) {
     const trelloLabels = response;
     trelloLabels.filter((trelloLabel) => issueLabelNames.indexof(trelloLabel.name) !== -1);
     trelloLabelIds.push(trelloLabels.map((label) => label.id));
   });
 
-  const members = getMembersOfBoard(boardId).then(function (response) {
+  const members = getMembersOfBoard(trelloBoard).then(function (response) {
     const members = response;
     members.filter((member) => issueAssigneeNicks.indexof(member.username) !== -1);
     memberIds.push(members.map((member) => member.id));
@@ -103,7 +104,7 @@ function pullRequestEventMoveCard() {
   }
   const pullRequest = context.event.pull_request;
 
-  getMembersOfBoard(boardId)
+  getMembersOfBoard(trelloBoard)
     .then(function (response) {
       if (process.env.TRELLO_SYNC_BOARD_MEMBERS || false) {
         const prReviewers = pullRequest.requested_reviewers.map((reviewer) => reviewer.login);

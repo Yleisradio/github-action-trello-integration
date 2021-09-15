@@ -5,7 +5,7 @@ import { boardId } from './utils';
 const apiBaseUrl = 'https://api.trello.com/1';
 const cache = {};
 const debug = getInput('verbose');
-
+const trelloBoard = boardId();
 /**
  * Build API URI.
  *
@@ -46,10 +46,10 @@ const apiBaseHeaders = () => {
  * @returns Object[]
  */
 function getLabelsOfBoard() {
-  const endpoint = `boards/${boardId}/labels`;
+  const endpoint = `boards/${trelloBoard}/labels`;
   const options = { ...apiBaseHeaders };
-  if (!cache.boardLabels[boardId]) {
-    cache.boardLabels[boardId] = new Promise(function (resolve, reject) {
+  if (!cache.boardLabels[trelloBoard]) {
+    cache.boardLabels[trelloBoard] = new Promise(function (resolve, reject) {
       if (debug) {
         console.log(`getLabelsOfBoard calling ${buildApiUri(endpoint)} with`, options);
       }
@@ -58,13 +58,13 @@ function getLabelsOfBoard() {
           if (debug) {
             console.log(`getLabelsOfBoard got response:`, body.json());
           }
-          cache.boardLabels[boardId] = resolve(body.json());
-          return cache.boardLabels[boardId];
+          cache.boardLabels[trelloBoard] = resolve(body.json());
+          return cache.boardLabels[trelloBoard];
         })
         .catch((error) => reject(error));
     });
   }
-  return cache.boardLabels[boardId];
+  return cache.boardLabels[trelloBoard];
 }
 
 /**
@@ -75,10 +75,10 @@ function getLabelsOfBoard() {
  * @returns Object[]
  */
 function getMembersOfBoard() {
-  const endpoint = `boards/${boardId}/members`;
+  const endpoint = `boards/${trelloBoard}/members`;
   const options = { ...apiBaseHeaders };
-  if (!cache.boardMembers[boardId]) {
-    cache.boardMembers[boardId] = new Promise(function (resolve, reject) {
+  if (!cache.boardMembers[trelloBoard]) {
+    cache.boardMembers[trelloBoard] = new Promise(function (resolve, reject) {
       if (debug) {
         console.log(`getMembersOfBoard calling ${buildApiUri(endpoint)} with`, options);
       }
@@ -87,13 +87,13 @@ function getMembersOfBoard() {
           if (debug) {
             console.log(`getMembersOfBoard got response:`, body.json());
           }
-          cache.boardMembers[boardId] = resolve(body.json());
-          return cache.boardMembers[boardId];
+          cache.boardMembers[trelloBoard] = resolve(body.json());
+          return cache.boardMembers[trelloBoard];
         })
         .catch((error) => reject(error));
     });
   }
-  return cache.boardMembers[boardId];
+  return cache.boardMembers[trelloBoard];
 }
 
 /**
@@ -105,10 +105,10 @@ function getMembersOfBoard() {
  */
 function getListsOnBoard() {
   // We are only interested in open lists.
-  const endpoint = `/object/${boardId}/lists??fields=all&filter==open`;
+  const endpoint = `/object/${trelloBoard}/lists??fields=all&filter==open`;
   const options = { ...apiBaseHeaders };
-  if (!cache.boardLists[boardId]) {
-    cache.boardLists[boardId] = new Promise(function (resolve, reject) {
+  if (!cache.boardLists[trelloBoard]) {
+    cache.boardLists[trelloBoard] = new Promise(function (resolve, reject) {
       if (debug) {
         console.log(`getListsOnBoard calling ${buildApiUri(endpoint)} with`, options);
       }
@@ -117,13 +117,13 @@ function getListsOnBoard() {
           if (debug) {
             console.log(`getListsOnBoard got response:`, body.json());
           }
-          cache.boardLists[boardId] = resolve(body.json());
-          return cache.boardLists[boardId];
+          cache.boardLists[trelloBoard] = resolve(body.json());
+          return cache.boardLists[trelloBoard];
         })
         .catch((error) => reject(error));
     });
   }
-  return cache.boardLists[boardId];
+  return cache.boardLists[trelloBoard];
 }
 
 /**
