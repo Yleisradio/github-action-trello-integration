@@ -21130,7 +21130,7 @@ const apiBaseHeaders = () => {
 function getLabelsOfBoard() {
   const endpoint = `boards/${trelloBoard}/labels`;
   const options = { ...apiBaseHeaders };
-  const functionName = arguments.callee.toString() + '()';
+  const functionName = 'getLabelsOfBoard()';
 
   if (api_debug) {
     console.log(
@@ -21167,7 +21167,7 @@ function getLabelsOfBoard() {
 function getMembersOfBoard() {
   const endpoint = `boards/${trelloBoard}/members`;
   const options = { ...apiBaseHeaders };
-  const functionName = arguments.callee.toString() + '()';
+  const functionName = 'getMembersOfBoard()';
 
   if (api_debug) {
     console.log(
@@ -21205,7 +21205,7 @@ function getListsOnBoard() {
   // We are only interested in open lists.
   const endpoint = `/object/${trelloBoard}/lists??fields=all&filter==open`;
   const options = { ...apiBaseHeaders };
-  const functionName = arguments.callee.toString() + '()';
+  const functionName = 'getListsOnBoard()';
 
   if (api_debug) {
     console.log(
@@ -21243,7 +21243,7 @@ function getListsOnBoard() {
 function getCardsOfList(listId) {
   const endpoint = `lists/${listId}/cards`;
   const options = { ...apiBaseHeaders };
-  const functionName = arguments.callee.toString() + '()';
+  const functionName = 'getCardsOfList()';
 
   if (api_debug) {
     console.log(
@@ -21295,7 +21295,7 @@ function createCard(listId, params) {
     },
     json: true,
   };
-  const functionName = arguments.callee.toString() + '()';
+  const functionName = 'createCard()';
 
   if (api_debug) {
     console.log(
@@ -21340,7 +21340,7 @@ function updateCard(cardId, params) {
       idMembers: params.memberIds,
     },
   };
-  const functionName = arguments.callee.toString() + '()';
+  const functionName = 'updateCard()';
 
   if (api_debug) {
     console.log(
@@ -21379,7 +21379,7 @@ function getCardAttachments(cardId) {
   const endpoint = `cards/${cardId}/attachments`;
   const options = { ...apiBaseHeaders };
 
-  const functionName = arguments.callee.toString() + '()';
+  const functionName = 'getCardAttachments()';
 
   if (api_debug) {
     console.log(
@@ -21427,7 +21427,7 @@ function addUrlSourceToCard(cardId, url) {
       url: url,
     },
   };
-  const functionName = arguments.callee.toString() + '()';
+  const functionName = 'addUrlSourceToCard()';
 
   if (api_debug) {
     console.log(
