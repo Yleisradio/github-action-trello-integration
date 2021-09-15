@@ -6408,15 +6408,21 @@ const validateListExistsOnBoard = (listId) => {
 };
 
 const boardId = () => {
+  if (typeof process === 'undefined') {
+    return 'invalid 1';
+  }
+  if (typeof process.env === 'undefined') {
+    return 'invalid 2';
+  }
   if (typeof process.env.TRELLO_BOARD_ID === 'undefined') {
-    return 'invalid';
+    return 'invalid 3';
   }
   if (!validateIdPattern(process.env.TRELLO_BOARD_ID)) {
     throw Error('Board ID is not valid.');
   }
   return process.env.TRELLO_BOARD_ID;
 };
-
+console.debug(boardId, typeof boardId);
 
 
 ;// CONCATENATED MODULE: ./src/api.js
