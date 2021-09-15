@@ -9,7 +9,10 @@ import { getListsOnBoard } from './api';
  *
  * @returns boolean
  */
-const validateIdPattern = (id) => id.match(/^[0-9a-fA-F]{24}$/);
+const validateIdPattern = (id) => {
+  const matches = id.match(/^[0-9a-fA-F]{24}$/);
+  return matches.length === 1 && matches[0] === id;
+};
 
 /**
  * Validate Trello list exists on board.
