@@ -21495,6 +21495,7 @@ try {
 
 function issueOpenedCreateCard() {
   const issue = (github_default()).context.payload.issue;
+  const issueEventName = (github_default()).context.eventName;
   const issueNumber = issue.number;
   const issueTitle = issue.title;
   const issueBody = issue.body;
@@ -21505,6 +21506,7 @@ function issueOpenedCreateCard() {
     JSON.stringify(
       {
         issueNumber: issueNumber,
+        issueEventName: issueEventName,
         issueTitle: issueTitle,
         issueBody: issueBody,
         issueUrl: issueUrl,

@@ -36,6 +36,7 @@ try {
 
 function issueOpenedCreateCard() {
   const issue = github.context.payload.issue;
+  const issueEventName = github.context.eventName;
   const issueNumber = issue.number;
   const issueTitle = issue.title;
   const issueBody = issue.body;
@@ -46,6 +47,7 @@ function issueOpenedCreateCard() {
     JSON.stringify(
       {
         issueNumber: issueNumber,
+        issueEventName: issueEventName,
         issueTitle: issueTitle,
         issueBody: issueBody,
         issueUrl: issueUrl,
