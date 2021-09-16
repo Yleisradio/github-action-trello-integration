@@ -21494,8 +21494,14 @@ try {
 }
 
 function issueOpenedCreateCard() {
-  const issue = (github_default()).context.payload.issue;
-  const issueEventName = (github_default()).context.eventName;
+  let issue, issueEventName;
+  try {
+    issue = (github_default()).context.payload.issue;
+    issueEventName = (github_default()).context.eventName;
+  } catch (error) {
+    console.log(error);
+    console.trace();
+  }
   const issueNumber = issue.number;
   const issueTitle = issue.title;
   const issueBody = issue.body;
@@ -21563,8 +21569,15 @@ function issueOpenedCreateCard() {
 }
 
 function pullRequestEventMoveCard() {
-  const pullRequest = (github_default()).context.payload.pull_request;
-  const eventName = (github_default()).context.eventName;
+  let pullRequest, eventName;
+  try {
+    pullRequest = (github_default()).context.payload.pull_request;
+    eventName = (github_default()).context.eventName;
+  } catch (error) {
+    console.log(error);
+    console.trace();
+  }
+
   if (debug) {
     console.log(
       JSON.stringify(
