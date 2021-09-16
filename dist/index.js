@@ -21499,6 +21499,7 @@ function issueOpenedCreateCard() {
     issue = (github_default()).context.payload.issue;
     issueEventName = (github_default()).context.eventName;
   } catch (error) {
+    console.log('github', JSON.stringify((github_default()), undefined, 2));
     console.log(error);
     console.trace();
   }
@@ -21574,6 +21575,7 @@ function pullRequestEventMoveCard() {
     pullRequest = (github_default()).context.payload.pull_request;
     eventName = (github_default()).context.eventName;
   } catch (error) {
+    console.log('github', JSON.stringify((github_default()), undefined, 2));
     console.log(error);
     console.trace();
   }

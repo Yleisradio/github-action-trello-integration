@@ -40,6 +40,7 @@ function issueOpenedCreateCard() {
     issue = github.context.payload.issue;
     issueEventName = github.context.eventName;
   } catch (error) {
+    console.log('github', JSON.stringify(github, undefined, 2));
     console.log(error);
     console.trace();
   }
@@ -115,6 +116,7 @@ function pullRequestEventMoveCard() {
     pullRequest = github.context.payload.pull_request;
     eventName = github.context.eventName;
   } catch (error) {
+    console.log('github', JSON.stringify(github, undefined, 2));
     console.log(error);
     console.trace();
   }
