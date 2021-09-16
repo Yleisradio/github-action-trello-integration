@@ -1,5 +1,6 @@
-import { setFailed, getInput } from '@actions/core';
-import github from '@actions/github';
+import * as core from '@actions/core';
+import * as github from '@actions/github';
+import { PushEvent } from '@octokit/webhooks-definitions/schema'
 import {
   getLabelsOfBoard,
   getMembersOfBoard,
@@ -14,7 +15,7 @@ import { validateListExistsOnBoard, boardId } from './utils';
 const trelloBoard = boardId();
 
 try {
-  const action = getInput('action');
+  const action = core.getInput('action');
   if (!action) {
     throw Error('Action is not set.');
   }
@@ -31,10 +32,13 @@ try {
       throw Error('Action is not supported: ' + action);
   }
 } catch (error) {
-  setFailed(error);
+  core.setFailed(error);
 }
 
 function issueOpenedCreateCard() {
+  const pushPayload = github.context.payload as PushEvent
+  core.info(`The head commit is: ${pushPayload.head_commit}`)
+
   let issue, issueEventName;
   try {
     issue = github.context.payload.issue;
@@ -71,7 +75,7 @@ function issueOpenedCreateCard() {
     const listId = process.env.TRELLO_LIST_ID;
     validateListExistsOnBoard(listId);
   } catch (error) {
-    setFailed(error);
+    core.setFailed(error);
     return;
   }
   let trelloLabelIds = [];
@@ -149,7 +153,7 @@ function pullRequestEventMoveCard() {
       throw Error("Trello's source and target list IDs must be present when moving card around.");
     }
   } catch (error) {
-    setFailed(error);
+    core.setFailed(error);
     return;
   }
 
@@ -203,7 +207,7 @@ function pullRequestEventMoveCard() {
             addUrlSourceToCard(cardId, prUrl);
           });
         } else {
-          setFailed('Card not found.');
+          core.setFailed('Card not found.');
         }
       });
     });

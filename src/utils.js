@@ -1,7 +1,7 @@
-import { getInput } from '@actions/core';
+import * as core from '@actions/core';
 import { getListsOnBoard } from './api';
 
-const debug = getInput('verbose');
+const debug = core.getInput('verbose');
 
 /**
  * Validate Trello entity id.

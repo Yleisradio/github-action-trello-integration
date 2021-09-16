@@ -1,16 +1,14 @@
-import { getInput } from '@actions/core';
+import * as core from '@actions/core';
 import fetch from 'node-fetch-cache';
 import { boardId } from './utils';
 
 const apiBaseUrl = 'https://api.trello.com/1';
-const cache = {
-  boardLabels: [],
-  boardMembers: [],
-  boardLists: [],
-  listCards: [],
-};
-const debug = getInput('verbose');
+const debug = core.getInput('verbose');
 const trelloBoard = boardId();
+
+console.log(`trelloBoard: ${trelloBoard}`);
+console.log(`boardId(): ${boardId()}`);
+
 /**
  * Build API URI.
  *

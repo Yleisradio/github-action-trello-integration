@@ -25,6 +25,7 @@
   "dependencies": {
     "@actions/core": "^1.5.0",
     "@actions/github": "^5.0.0",
+    "@octokit/webhooks-definitions": "^3.67.3",
     "node-fetch-cache": "^3.0.3"
   },
   "devDependencies": {
