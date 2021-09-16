@@ -43,21 +43,23 @@ function issueOpenedCreateCard() {
   const issueUrl = issue.html_url;
   const issueAssigneeNicks = issue.assignees.map((assignee) => assignee.login);
   const issueLabelNames = issue.labels.map((label) => label.name);
-  console.log(
-    JSON.stringify(
-      {
-        issueNumber: issueNumber,
-        issueEventName: issueEventName,
-        issueTitle: issueTitle,
-        issueBody: issueBody,
-        issueUrl: issueUrl,
-        issueAssigneeNicks: issueAssigneeNicks,
-        issueLabelNames: issueLabelNames,
-      },
-      undefined,
-      2,
-    ),
-  );
+  if (debug) {
+    console.log(
+      JSON.stringify(
+        {
+          issueNumber: issueNumber,
+          issueEventName: issueEventName,
+          issueTitle: issueTitle,
+          issueBody: issueBody,
+          issueUrl: issueUrl,
+          issueAssigneeNicks: issueAssigneeNicks,
+          issueLabelNames: issueLabelNames,
+        },
+        undefined,
+        2,
+      ),
+    );
+  }
   try {
     const listId = process.env.TRELLO_LIST_ID;
     validateListExistsOnBoard(listId);
@@ -102,6 +104,25 @@ function issueOpenedCreateCard() {
 }
 
 function pullRequestEventMoveCard() {
+  const pullRequest = github.context.payload.pull_request;
+  const eventName = github.context.eventName;
+  if (debug) {
+    console.log(
+      JSON.stringify(
+        {
+          prNumber: pullRequest.number,
+          issueEventName: eventName,
+          prTitle: pullRequest.title,
+          prBody: pullRequest.body,
+          prUrl: pullRequest.html_url,
+          prAssignees: JSON.stringify(pullRequest.assignees, undefined, 2),
+          prLabelNames: JSON.stringify(pullRequest.labels, undefined, 2),
+        },
+        undefined,
+        2,
+      ),
+    );
+  }
   try {
     const haystackList = process.env.TRELLO_SOURCE_LIST_ID;
     validateListExistsOnBoard(haystackList);
@@ -116,7 +137,6 @@ function pullRequestEventMoveCard() {
     setFailed(error);
     return;
   }
-  const pullRequest = context.event.pull_request;
 
   getMembersOfBoard(trelloBoard)
     .then(function (response) {
