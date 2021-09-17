@@ -48,14 +48,7 @@ if (!apiKey || !apiToken) {
  * @param {string} endpoint
  * @returns string
  */
-const buildApiUri = (endpoint) => {
-    if (endpoint.includes('?')) {
-        return `${apiBaseUrl}${endpoint}&key=${apiKey}&token=${apiToken}`;
-    }
-    else {
-        return `${apiBaseUrl}${endpoint}?key=${apiKey}&token=${apiToken}`;
-    }
-};
+const buildApiUri = (endpoint, additionalReqeustParameters) => `${apiBaseUrl}${endpoint}?${additionalReqeustParameters ? additionalReqeustParameters + '&' : ''}key=${apiKey}&token=${apiToken}`;
 /**
  * Base headers for REST API  authentication et al.
  *
@@ -148,16 +141,17 @@ exports.getMembersOfBoard = getMembersOfBoard;
  */
 function getListsOnBoard() {
     // We are only interested in open lists.
-    const endpoint = `/boards/${trelloBoard}/lists?filter=open`;
+    const endpoint = `/boards/${trelloBoard}/lists`;
+    const endpointArgs = 'filter=open';
     const options = Object.assign({}, apiBaseHeaders());
     const functionName = 'getListsOnBoard()';
     if (debug) {
         console.log(`${functionName} kicked off`);
     }
     if (debug) {
-        console.log(` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(options, undefined, 2)}`);
+        console.log(` ${functionName} calling ${buildApiUri(endpoint, endpointArgs)} with options: ${JSON.stringify(options, undefined, 2)}`);
     }
-    return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
+    return (0, node_fetch_1.default)(buildApiUri(endpoint, endpointArgs), options)
         .then((response) => {
         console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
         console.log(response);
