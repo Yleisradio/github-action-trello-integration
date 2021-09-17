@@ -1,6 +1,8 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { PushEvent } from '@octokit/webhooks-definitions/schema'
+import { WebhookPayload } from '@actions/github/lib/interfaces';
+import { PushEvent } from '@octokit/webhooks-definitions/schema';
+
 import {
   getLabelsOfBoard,
   getMembersOfBoard,
@@ -10,16 +12,22 @@ import {
   getCardAttachments,
   addUrlSourceToCard,
 } from './api';
+
 import { validateListExistsOnBoard, boardId } from './utils';
 
-const trelloBoard = boardId();
+const trelloBoard: string = boardId();
 
+var debug: string = '';
+var action: string = '';
 try {
-  const action = core.getInput('action');
+  action = core.getInput('action');
   if (!action) {
     throw Error('Action is not set.');
   }
 
+  if (debug) {
+    console.log(`Selected action is ${action}`);
+  }
   switch (action) {
     case 'issue_opened_create_card':
       issueOpenedCreateCard();
@@ -32,12 +40,13 @@ try {
       throw Error('Action is not supported: ' + action);
   }
 } catch (error) {
-  core.setFailed(error);
+  core.setFailed(error as Error);
+  console.trace();
 }
 
 function issueOpenedCreateCard() {
-  const pushPayload = github.context.payload as PushEvent
-  core.info(`The head commit is: ${pushPayload.head_commit}`)
+  const pushPayload: PushEvent = github.context.payload as any as PushEvent;
+  core.info(`The head commit is: ${pushPayload.head_commit}`);
 
   let issue, issueEventName;
   try {
@@ -48,12 +57,12 @@ function issueOpenedCreateCard() {
     console.log(error);
     console.trace();
   }
-  const issueNumber = issue.number;
-  const issueTitle = issue.title;
-  const issueBody = issue.body;
-  const issueUrl = issue.html_url;
-  const issueAssigneeNicks = issue.assignees.map((assignee) => assignee.login);
-  const issueLabelNames = issue.labels.map((label) => label.name);
+  const issueNumber = issue?.number;
+  const issueTitle = issue?.title;
+  const issueBody = issue?.body;
+  const issueUrl = issue?.html_url;
+  const issueAssigneeNicks = issue?.assignees.map((assignee) => assignee.login);
+  const issueLabelNames = issue?.labels.map((label) => label.name);
   if (debug) {
     console.log(
       JSON.stringify(
@@ -72,16 +81,16 @@ function issueOpenedCreateCard() {
     );
   }
   try {
-    const listId = process.env.TRELLO_LIST_ID;
+    const listId: string = process.env.TRELLO_LIST_ID as string;
     validateListExistsOnBoard(listId);
   } catch (error) {
-    core.setFailed(error);
+    core.setFailed(error as Error);
     return;
   }
-  let trelloLabelIds = [];
-  let memberIds = [];
+  let trelloLabelIds: string[] = [];
+  let memberIds: string[] = [];
 
-  const labels = getLabelsOfBoard(trelloBoard).then(function (response) {
+  const labels = getLabelsOfBoard().then(function (response) {
     const trelloLabels = response;
     trelloLabels.filter((trelloLabel) => issueLabelNames.indexof(trelloLabel.name) !== -1);
     trelloLabelIds.push(trelloLabels.map((label) => label.id));
@@ -113,29 +122,29 @@ function issueOpenedCreateCard() {
     });
   });
 }
-
+interface GH_PR {
+  [key: string]: any;
+  number: number;
+  html_url?: string;
+  body?: string;
+}
 function pullRequestEventMoveCard() {
-  let pullRequest, eventName;
-  try {
-    pullRequest = github.context.payload.pull_request;
-    eventName = github.context.eventName;
-  } catch (error) {
-    console.log('github', JSON.stringify(github, undefined, 2));
-    console.log(error);
-    console.trace();
-  }
+  const payLoad: WebhookPayload = github.context.payload;
+  const eventName: string = github.context.eventName;
+  const pullRequest = payLoad.pull_request;
 
   if (debug) {
+    console.log('github', JSON.stringify(github, undefined, 2));
     console.log(
       JSON.stringify(
         {
-          prNumber: pullRequest.number,
+          prNumber: pullRequest?.number,
           issueEventName: eventName,
-          prTitle: pullRequest.title,
-          prBody: pullRequest.body,
-          prUrl: pullRequest.html_url,
-          prAssignees: JSON.stringify(pullRequest.assignees, undefined, 2),
-          prLabelNames: JSON.stringify(pullRequest.labels, undefined, 2),
+          prTitle: pullRequest?.title,
+          prBody: pullRequest?.body,
+          prUrl: pullRequest?.html_url,
+          prAssignees: JSON.stringify(pullRequest?.assignees, undefined, 2),
+          prLabelNames: JSON.stringify(pullRequest?.labels, undefined, 2),
         },
         undefined,
         2,
@@ -143,28 +152,31 @@ function pullRequestEventMoveCard() {
     );
   }
   try {
-    const haystackList = process.env.TRELLO_SOURCE_LIST_ID;
-    validateListExistsOnBoard(haystackList);
+    const sourceList: string = process.env.TRELLO_SOURCE_LIST_ID as string;
+    const targetList: string = process.env.TRELLO_TARGET_LIST_ID as string;
+    const syncMembers: string = process.env.TRELLO_SYNC_BOARD_MEMBERS as string;
 
-    const targetList = process.env.TRELLO_TARGET_LIST_ID;
-    validateListExistsOnBoard(targetList);
-
-    if (!haystackList || !targetList) {
+    if (!sourceList || !targetList) {
       throw Error("Trello's source and target list IDs must be present when moving card around.");
     }
+
+    validateListExistsOnBoard(sourceList);
+    validateListExistsOnBoard(targetList);
   } catch (error) {
-    core.setFailed(error);
+    core.setFailed(error as Error);
     return;
   }
 
-  getMembersOfBoard(trelloBoard)
-    .then(function (response) {
-      if (process.env.TRELLO_SYNC_BOARD_MEMBERS || false) {
-        const prReviewers = pullRequest.requested_reviewers.map((reviewer) => reviewer.login);
-        const members = response;
-        const additionalMemberIds = [];
+  getMembersOfBoard()
+    .then((response) => {
+      if (syncMembers.length === 0) {
+        const prReviewers: string[] = pullRequest?.requested_reviewers.map(
+          (reviewer: any) => reviewer.login as string,
+        );
+        const members: [] = response;
+        const additionalMemberIds: string[] = [];
         prReviewers.forEach(function (reviewer) {
-          members.forEach(function (member) {
+          members.forEach((member) => {
             if (member.username == reviewer) {
               additionalMemberIds[member.username] = member.id;
             }
@@ -174,25 +186,26 @@ function pullRequestEventMoveCard() {
       }
     })
     .then(() => {
-      getCardsOfList(haystackList).then(function (response) {
+      getCardsOfList(sourceList).then((response) => {
         const cards = response;
-        const prIssuesReferenced = pullRequest.body.match(/#[1-9][0-9]*/);
-        const prUrl = pullRequest.html_url;
+        const prIssuesReferenced: string[] = pullRequest?.body?.match(/#[1-9][0-9]*/) || [];
+        const prUrl: string = pullRequest?.html_url || '';
 
         let cardId;
         let existingMemberIds = [];
         cards.some(function (card) {
           const haystack = `${card.name} ${card.desc}`;
-          const card_issue_numbers = haystack.match(/#[0-9][1-9]*/);
+          const card_issue_numbers = haystack.match(/#[0-9][1-9]*/) || [];
           if (debug) {
             console.log('card_issue_numbers', JSON.stringify(card_issue_numbers, undefined, 2));
           }
-          card_issue_numbers.forEach((element) => {});
-          if ((card_issue_number == prIssuesReferenced.indexOf(card_issue_number)) !== -1) {
-            cardId = card.id;
-            existingMemberIds.push(card.idMembers);
-            return false;
-          }
+          card_issue_numbers.forEach((card_issue_number) => {
+            if ((card_issue_number && prIssuesReferenced.indexOf(card_issue_number)) !== -1) {
+              cardId = card.id;
+              existingMemberIds.push(card.idMembers);
+              return false;
+            }
+          });
         });
         const cardParams = {
           destinationListId: targetList,

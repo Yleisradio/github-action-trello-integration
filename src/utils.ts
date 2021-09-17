@@ -12,9 +12,9 @@ const debug = core.getInput('verbose');
  *
  * @returns boolean
  */
-const validateIdPattern = (id) => {
+const validateIdPattern = (id: string) => {
   const matches = id.match(/^[0-9a-fA-F]{24}$/);
-  return matches.length === 1 && matches[0] === id;
+  return matches && matches[0] === id;
 };
 
 /**
@@ -24,18 +24,19 @@ const validateIdPattern = (id) => {
  *
  * @throws if lists is not on the board.
  */
-const validateListExistsOnBoard = (listId) => {
-  if (!validateIdPattern(listId)) {
-    throw new Error('List id is not valid (pattern): ' + listId);
-  }
-  const trelloBoard = boardId();
-  const lists = getListsOnBoard(trelloBoard);
-  if (lists.indexOf(listId) === -1) {
-    throw new Error('List id is not on the board: ' + listId);
+const validateListExistsOnBoard = async (listId: string) => {
+  if (validateIdPattern(listId)) {
+    const lists = (await getListsOnBoard()) || [];
+    if (lists.length && lists.indexOf(listId) === -1) {
+      throw new Error('List id is not on the board: ' + listId);
+    }
+  } else {
+    console.error('List id is not valid (pattern): ' + listId);
+    return false;
   }
 };
 
-const boardId = () => {
+const boardId = (): string => {
   if (
     process &&
     process.env &&

@@ -1,6 +1,8 @@
 import * as core from '@actions/core';
-import fetch from 'node-fetch-cache';
+import fetch from 'node-fetch';
 import { boardId } from './utils';
+import { RequestInit } from 'node-fetch';
+import { TrelloList } from './types';
 
 const apiBaseUrl = 'https://api.trello.com/1';
 const debug = core.getInput('verbose');
@@ -9,13 +11,23 @@ const trelloBoard = boardId();
 console.log(`trelloBoard: ${trelloBoard}`);
 console.log(`boardId(): ${boardId()}`);
 
+interface cardParams {
+  number: string;
+  title?: string;
+  description?: string;
+  sourceUrl?: string;
+  memberIds?: string;
+  labelIds?: string;
+  destinationListId?: string;
+}
+
 /**
  * Build API URI.
  *
  * @param {string} endpoint
  * @returns string
  */
-const buildApiUri = (endpoint) => `${apiBaseUrl}${endpoint}`;
+const buildApiUri = (endpoint: string): string => `${apiBaseUrl}${endpoint}`;
 
 /**
  * Base headers for REST API  authentication et al.
@@ -25,9 +37,9 @@ const buildApiUri = (endpoint) => `${apiBaseUrl}${endpoint}`;
  *
  * @returns object
  */
-const apiBaseHeaders = () => {
-  const apiKey = process.env.TRELLO_API_KEY;
-  const apiToken = process.env.TRELLO_API_TOKEN;
+const apiBaseHeaders = (): object => {
+  const apiKey: string = process?.env?.TRELLO_API_KEY || '';
+  const apiToken: string = process?.env?.TRELLO_API_TOKEN || '';
   if (!apiKey || !apiToken) {
     throw Error('Trello API key and/or token is missing.');
   }
@@ -48,9 +60,9 @@ const apiBaseHeaders = () => {
  *
  * @returns Object[]
  */
-function getLabelsOfBoard() {
+function getLabelsOfBoard(): Promise<unknown> {
   const endpoint = `/boards/${trelloBoard}/labels`;
-  const options = { ...apiBaseHeaders };
+  const options: RequestInit = { ...(apiBaseHeaders() as RequestInit) };
   const functionName = 'getLabelsOfBoard()';
 
   if (debug) {
@@ -62,21 +74,22 @@ function getLabelsOfBoard() {
       )}`,
     );
   }
-  fetch(buildApiUri(endpoint), options).then(async (response) => {
-    if (!response.ok) {
-      await response.ejectFromCache();
-      if (debug) {
-        console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
+  return fetch(buildApiUri(endpoint), options)
+    .then((response) => {
+      if (!response.ok) {
+        if (debug) {
+          console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
+        }
+        return [];
+      } else {
+        const data = response.json();
+        if (debug) {
+          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
+        }
+        return data;
       }
-      return;
-    } else {
-      const data = response.json();
-      if (debug) {
-        console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-      }
-      return data;
-    }
-  });
+    })
+    .catch((error) => error);
 }
 
 /**
@@ -86,9 +99,9 @@ function getLabelsOfBoard() {
  *
  * @returns Object[]
  */
-function getMembersOfBoard() {
+function getMembersOfBoard(): Promise<unknown> {
   const endpoint = `/boards/${trelloBoard}/members`;
-  const options = { ...apiBaseHeaders() };
+  const options: RequestInit = { ...(apiBaseHeaders() as RequestInit) };
   const functionName = 'getMembersOfBoard()';
 
   if (debug) {
@@ -100,21 +113,22 @@ function getMembersOfBoard() {
       )}`,
     );
   }
-  fetch(buildApiUri(endpoint), options).then(async (response) => {
-    if (!response.ok) {
-      await response.ejectFromCache();
-      if (debug) {
-        console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
+  return fetch(buildApiUri(endpoint), options)
+    .then((response) => {
+      if (!response.ok) {
+        if (debug) {
+          console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
+        }
+        return [];
+      } else {
+        const data = response.json();
+        if (debug) {
+          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
+        }
+        return data;
       }
-      return;
-    } else {
-      const data = response.json();
-      if (debug) {
-        console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-      }
-      return data;
-    }
-  });
+    })
+    .catch((error) => error);
 }
 
 /**
@@ -124,11 +138,14 @@ function getMembersOfBoard() {
  *
  * @returns Object[]
  */
-function getListsOnBoard() {
+function getListsOnBoard(): Promise<TrelloList[]> {
   // We are only interested in open lists.
   const endpoint = `/object/${trelloBoard}/lists??fields=all&filter==open`;
-  const options = { ...apiBaseHeaders() };
+  const options: RequestInit = { ...(apiBaseHeaders() as RequestInit) };
   const functionName = 'getListsOnBoard()';
+  if (debug) {
+    console.log(`${functionName} kicked off`);
+  }
 
   if (debug) {
     console.log(
@@ -139,21 +156,22 @@ function getListsOnBoard() {
       )}`,
     );
   }
-  fetch(buildApiUri(endpoint), options).then(async (response) => {
-    if (!response.ok) {
-      if (debug) {
-        console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
+  return fetch(buildApiUri(endpoint), options)
+    .then((response) => {
+      if (!response.ok) {
+        if (debug) {
+          console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
+        }
+        return [];
       }
-      await response.ejectFromCache();
-      return;
-    } else {
-      const data = response.json();
+
+      const data = response.json() as unknown as TrelloList[];
       if (debug) {
         console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
       }
       return data;
-    }
-  });
+    })
+    .catch((error) => error);
 }
 
 /**
@@ -164,9 +182,9 @@ function getListsOnBoard() {
  * @param {*} listId
  * @returns
  */
-function getCardsOfList(listId) {
+function getCardsOfList(listId: string): Promise<unknown> {
   const endpoint = `/lists/${listId}/cards`;
-  const options = { ...apiBaseHeaders() };
+  const options: RequestInit = { ...(apiBaseHeaders() as RequestInit) };
   const functionName = 'getCardsOfList()';
 
   if (debug) {
@@ -178,22 +196,24 @@ function getCardsOfList(listId) {
       )}`,
     );
   }
-  fetch(buildApiUri(endpoint), options).then(async (response) => {
-    if (!response.ok) {
-      await response.ejectFromCache();
-      if (debug) {
-        console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
+  return fetch(buildApiUri(endpoint), options)
+    .then((response) => {
+      if (!response.ok) {
+        if (debug) {
+          console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
+        }
+        return [];
+      } else {
+        const data = response.json();
+        if (debug) {
+          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
+        }
+        return data;
       }
-      return;
-    } else {
-      const data = response.json();
-      if (debug) {
-        console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-      }
-      return data;
-    }
-  });
+    })
+    .catch((error) => error);
 }
+
 /**
  * Create a new Card
  *
@@ -203,10 +223,10 @@ function getCardsOfList(listId) {
  * @param {*} params
  * @returns Card
  */
-function createCard(listId, params) {
+function createCard(listId: string, params: cardParams): Promise<unknown> {
   const endpoint = `/cards`;
   const options = {
-    ...apiBaseHeaders(),
+    ...(apiBaseHeaders() as RequestInit),
     method: 'POST',
     url: buildApiUri(endpoint),
     form: {
@@ -231,21 +251,22 @@ function createCard(listId, params) {
       )}`,
     );
   }
-  fetch(buildApiUri(endpoint), options).then(async (response) => {
-    if (!response.ok) {
-      await response.ejectFromCache();
-      if (debug) {
-        console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
+  return fetch(buildApiUri(endpoint), options as RequestInit)
+    .then((response) => {
+      if (!response.ok) {
+        if (debug) {
+          console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
+        }
+        return [];
+      } else {
+        const data = response.json();
+        if (debug) {
+          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
+        }
+        return data;
       }
-      return;
-    } else {
-      const data = response.json();
-      if (debug) {
-        console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-      }
-      return data;
-    }
-  });
+    })
+    .catch((error) => error);
 }
 /**
  * Update the contents of a Card.
@@ -256,7 +277,7 @@ function createCard(listId, params) {
  * @param {*} params
  * @returns
  */
-function updateCard(cardId, params) {
+function updateCard(cardId: string, params: cardParams): Promise<unknown> {
   const endpoint = `/cards/${cardId}`;
   const options = {
     ...apiBaseHeaders(),
@@ -277,21 +298,22 @@ function updateCard(cardId, params) {
       )}`,
     );
   }
-  fetch(buildApiUri(endpoint), options).then(async (response) => {
-    if (!response.ok) {
-      await response.ejectFromCache();
-      if (debug) {
-        console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
+  return fetch(buildApiUri(endpoint), options as RequestInit)
+    .then((response) => {
+      if (!response.ok) {
+        if (debug) {
+          console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
+        }
+        return [];
+      } else {
+        const data = response.json();
+        if (debug) {
+          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
+        }
+        return data;
       }
-      return;
-    } else {
-      const data = response.json();
-      if (debug) {
-        console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-      }
-      return data;
-    }
-  });
+    })
+    .catch((error) => error);
 }
 
 /**
@@ -302,7 +324,7 @@ function updateCard(cardId, params) {
  * @param {*} cardId
  * @returns Attachment[]
  */
-function getCardAttachments(cardId) {
+function getCardAttachments(cardId: string): Promise<unknown> {
   const endpoint = `/cards/${cardId}/attachments`;
   const options = { ...apiBaseHeaders() };
 
@@ -317,21 +339,22 @@ function getCardAttachments(cardId) {
       )}`,
     );
   }
-  fetch(buildApiUri(endpoint), options).then(async (response) => {
-    if (!response.ok) {
-      await response.ejectFromCache();
-      if (debug) {
-        console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
+  return fetch(buildApiUri(endpoint), options as RequestInit)
+    .then((response) => {
+      if (!response.ok) {
+        if (debug) {
+          console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
+        }
+        return [];
+      } else {
+        const data = response.json();
+        if (debug) {
+          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
+        }
+        return data;
       }
-      return;
-    } else {
-      const data = response.json();
-      if (debug) {
-        console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-      }
-      return data;
-    }
-  });
+    })
+    .catch((error) => error);
 }
 
 /**
@@ -343,7 +366,7 @@ function getCardAttachments(cardId) {
  * @param {*} url
  * @returns
  */
-function addUrlSourceToCard(cardId, url) {
+function addUrlSourceToCard(cardId: string, url: string) {
   const endpoint = `/cards/${cardId}/attachments`;
   const options = {
     ...apiBaseHeaders(),
@@ -366,21 +389,22 @@ function addUrlSourceToCard(cardId, url) {
       )}`,
     );
   }
-  fetch(buildApiUri(endpoint), options).then(async (response) => {
-    if (!response.ok) {
-      await response.ejectFromCache();
-      if (debug) {
-        console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
+  return fetch(buildApiUri(endpoint), options as RequestInit)
+    .then((response) => {
+      if (!response.ok) {
+        if (debug) {
+          console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
+        }
+        return [];
+      } else {
+        const data = response.json();
+        if (debug) {
+          console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
+        }
+        return data;
       }
-      return;
-    } else {
-      const data = response.json();
-      if (debug) {
-        console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-      }
-      return data;
-    }
-  });
+    })
+    .catch((error) => error);
 }
 
 export {
