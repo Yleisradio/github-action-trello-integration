@@ -45,7 +45,7 @@ const apiBaseHeaders = (): object => {
   }
 
   return {
-    Authorization: `OAuth oauth_consumer_key="${apiKey}", oauth_token="${apiToken}"`,
+    Authorization: 'OAuth oauth_consumer_key="' + apiKey + '", oauth_token="' + apiToken + '"',
     redirect: 'follow',
     follow: 5,
     Accept: 'application/json',
