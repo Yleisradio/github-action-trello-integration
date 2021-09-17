@@ -2,23 +2,23 @@ import * as core from '@actions/core';
 import fetch, { Response } from 'node-fetch';
 import { boardId } from './utils';
 import { RequestInit } from 'node-fetch';
-import { TrelloLabel, TrelloList, TrelloMember, TrelloCard, TrelloAttachment } from './types';
+import {
+  TrelloLabel,
+  TrelloList,
+  TrelloMember,
+  TrelloCard,
+  TrelloAttachment,
+  TrelloCardRequestParams,
+} from './types';
 
 const apiBaseUrl = 'https://api.trello.com/1';
 const debug = core.getInput('verbose');
 const trelloBoard = boardId();
 
-console.log(`trelloBoard: ${trelloBoard}`);
-console.log(`boardId(): ${boardId()}`);
-
-interface cardParams {
-  number?: string;
-  title?: string;
-  description?: string;
-  sourceUrl?: string;
-  memberIds?: string;
-  labelIds?: string;
-  destinationListId?: string;
+const apiKey: string = process?.env?.TRELLO_API_KEY || '';
+const apiToken: string = process?.env?.TRELLO_API_TOKEN || '';
+if (!apiKey || !apiToken) {
+  throw Error('Trello API key and/or token is missing.');
 }
 
 /**
@@ -27,7 +27,8 @@ interface cardParams {
  * @param {string} endpoint
  * @returns string
  */
-const buildApiUri = (endpoint: string): string => `${apiBaseUrl}${endpoint}`;
+const buildApiUri = (endpoint: string): string =>
+  `${apiBaseUrl}${endpoint}?key=${apiKey}&token=${apiToken}`;
 
 /**
  * Base headers for REST API  authentication et al.
@@ -38,14 +39,8 @@ const buildApiUri = (endpoint: string): string => `${apiBaseUrl}${endpoint}`;
  * @returns object
  */
 const apiBaseHeaders = (): object => {
-  const apiKey: string = process?.env?.TRELLO_API_KEY || '';
-  const apiToken: string = process?.env?.TRELLO_API_TOKEN || '';
-  if (!apiKey || !apiToken) {
-    throw Error('Trello API key and/or token is missing.');
-  }
-
   return {
-    Authorization: 'OAuth oauth_consumer_key="' + apiKey + '", oauth_token="' + apiToken + '"',
+    // Authorization: 'OAuth oauth_consumer_key="' + apiKey + '", oauth_token="' + apiToken + '"',
     redirect: 'follow',
     follow: 5,
     Accept: 'application/json',
@@ -62,7 +57,7 @@ const apiBaseHeaders = (): object => {
  */
 function getLabelsOfBoard(): Promise<TrelloLabel[]> {
   const endpoint = `/boards/${trelloBoard}/labels`;
-  const options: RequestInit = { ...(apiBaseHeaders() as RequestInit) };
+  const options: RequestInit = { ...(apiBaseHeaders as RequestInit) };
   const functionName = 'getLabelsOfBoard()';
 
   if (debug) {
@@ -225,7 +220,7 @@ function getCardsOfList(listId: string): Promise<TrelloCard[]> {
  * @param {cardParams} params
  * @returns Card
  */
-function createCard(listId: string, params: cardParams): Promise<TrelloCard> {
+function createCard(listId: string, params: TrelloCardRequestParams): Promise<TrelloCard> {
   const endpoint = `/cards`;
   const options = {
     ...(apiBaseHeaders() as RequestInit),
@@ -279,7 +274,7 @@ function createCard(listId: string, params: cardParams): Promise<TrelloCard> {
  * @param {*} params
  * @returns
  */
-function updateCard(cardId: string, params: cardParams): Promise<TrelloCard> {
+function updateCard(cardId: string, params: TrelloCardRequestParams): Promise<TrelloCard> {
   const endpoint = `/cards/${cardId}`;
   const options = {
     ...apiBaseHeaders(),
@@ -418,5 +413,4 @@ export {
   updateCard,
   getCardAttachments,
   addUrlSourceToCard,
-  cardParams,
 };

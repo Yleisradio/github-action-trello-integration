@@ -9,9 +9,8 @@ import {
   updateCard,
   getCardAttachments,
   addUrlSourceToCard,
-  cardParams,
 } from './api';
-import { TrelloAttachment, TrelloCard } from './types';
+import { TrelloAttachment, TrelloCard, TrelloCardRequestParams } from './types';
 
 import { validateListExistsOnBoard } from './utils';
 
@@ -63,8 +62,6 @@ function issueOpenedCreateCard() {
       JSON.stringify(
         {
           function: 'issueOpenedCreateCard()',
-          issue: issue,
-          githubContext: github.context,
           issueEventName: issueEventName,
           issueNumber: issueNumber,
           issueTitle: issueTitle,
@@ -72,6 +69,7 @@ function issueOpenedCreateCard() {
           issueUrl: issueUrl,
           issueAssigneeNicks: issueAssigneeNicks,
           issueLabelNames: issueLabelNames,
+          githubContext: github.context,
         },
         undefined,
         2,
@@ -109,7 +107,7 @@ function issueOpenedCreateCard() {
       sourceUrl: issueUrl,
       memberIds: memberIds.join(),
       labelIds: trelloLabelIds.join(),
-    } as unknown as cardParams;
+    } as unknown as TrelloCardRequestParams;
 
     console.log(`Creating new card to ${listId} from issue  "[#${issueNumber}] ${issueTitle}"`);
 

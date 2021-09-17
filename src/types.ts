@@ -108,4 +108,22 @@ interface TrelloAttachment {
   url: string;
   pos: number;
 }
-export { TrelloList, TrelloLabel, TrelloCard, TrelloMember, TrelloAttachment };
+
+interface TrelloCardRequestParams {
+  number?: string;
+  title?: string;
+  description?: string;
+  sourceUrl?: string;
+  memberIds?: string;
+  labelIds?: string;
+  destinationListId?: string;
+}
+
+export {
+  TrelloList,
+  TrelloLabel,
+  TrelloCard,
+  TrelloMember,
+  TrelloAttachment,
+  TrelloCardRequestParams,
+};

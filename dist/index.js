@@ -28,6 +28,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var _a, _b;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.addUrlSourceToCard = exports.getCardAttachments = exports.updateCard = exports.createCard = exports.getCardsOfList = exports.getListsOnBoard = exports.getMembersOfBoard = exports.getLabelsOfBoard = void 0;
 const core = __importStar(__nccwpck_require__(3020));
@@ -36,15 +37,18 @@ const utils_1 = __nccwpck_require__(2477);
 const apiBaseUrl = 'https://api.trello.com/1';
 const debug = core.getInput('verbose');
 const trelloBoard = (0, utils_1.boardId)();
-console.log(`trelloBoard: ${trelloBoard}`);
-console.log(`boardId(): ${(0, utils_1.boardId)()}`);
+const apiKey = ((_a = process === null || process === void 0 ? void 0 : process.env) === null || _a === void 0 ? void 0 : _a.TRELLO_API_KEY) || '';
+const apiToken = ((_b = process === null || process === void 0 ? void 0 : process.env) === null || _b === void 0 ? void 0 : _b.TRELLO_API_TOKEN) || '';
+if (!apiKey || !apiToken) {
+    throw Error('Trello API key and/or token is missing.');
+}
 /**
  * Build API URI.
  *
  * @param {string} endpoint
  * @returns string
  */
-const buildApiUri = (endpoint) => `${apiBaseUrl}${endpoint}`;
+const buildApiUri = (endpoint) => `${apiBaseUrl}${endpoint}?key=${apiKey}&token=${apiToken}`;
 /**
  * Base headers for REST API  authentication et al.
  *
@@ -54,14 +58,8 @@ const buildApiUri = (endpoint) => `${apiBaseUrl}${endpoint}`;
  * @returns object
  */
 const apiBaseHeaders = () => {
-    var _a, _b;
-    const apiKey = ((_a = process === null || process === void 0 ? void 0 : process.env) === null || _a === void 0 ? void 0 : _a.TRELLO_API_KEY) || '';
-    const apiToken = ((_b = process === null || process === void 0 ? void 0 : process.env) === null || _b === void 0 ? void 0 : _b.TRELLO_API_TOKEN) || '';
-    if (!apiKey || !apiToken) {
-        throw Error('Trello API key and/or token is missing.');
-    }
     return {
-        Authorization: 'OAuth oauth_consumer_key="' + apiKey + '", oauth_token="' + apiToken + '"',
+        // Authorization: 'OAuth oauth_consumer_key="' + apiKey + '", oauth_token="' + apiToken + '"',
         redirect: 'follow',
         follow: 5,
         Accept: 'application/json',
@@ -77,7 +75,7 @@ const apiBaseHeaders = () => {
  */
 function getLabelsOfBoard() {
     const endpoint = `/boards/${trelloBoard}/labels`;
-    const options = Object.assign({}, apiBaseHeaders());
+    const options = Object.assign({}, apiBaseHeaders);
     const functionName = 'getLabelsOfBoard()';
     if (debug) {
         console.log(` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(options, undefined, 2)}`);
@@ -433,8 +431,6 @@ function issueOpenedCreateCard() {
     if (debug) {
         console.log(JSON.stringify({
             function: 'issueOpenedCreateCard()',
-            issue: issue,
-            githubContext: github.context,
             issueEventName: issueEventName,
             issueNumber: issueNumber,
             issueTitle: issueTitle,
@@ -442,6 +438,7 @@ function issueOpenedCreateCard() {
             issueUrl: issueUrl,
             issueAssigneeNicks: issueAssigneeNicks,
             issueLabelNames: issueLabelNames,
+            githubContext: github.context,
         }, undefined, 2));
     }
     const listId = process.env.TRELLO_LIST_ID;
