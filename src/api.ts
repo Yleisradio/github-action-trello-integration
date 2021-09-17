@@ -15,8 +15,8 @@ const apiBaseUrl = 'https://api.trello.com/1';
 const debug = core.getInput('verbose');
 const trelloBoard = boardId();
 
-const apiKey: string = process?.env?.TRELLO_API_KEY || '';
-const apiToken: string = process?.env?.TRELLO_API_TOKEN || '';
+const apiKey: string = process.env.TRELLO_API_KEY || '';
+const apiToken: string = process.env.TRELLO_API_TOKEN || '';
 if (!apiKey || !apiToken) {
   throw Error('Trello API key and/or token is missing.');
 }
@@ -42,9 +42,6 @@ const buildApiUri = (endpoint: string, additionalReqeustParameters?: string): st
  */
 const apiBaseHeaders = (): object => {
   return {
-    // Authorization: 'OAuth oauth_consumer_key="' + apiKey + '", oauth_token="' + apiToken + '"',
-    redirect: 'follow',
-    follow: 5,
     Accept: 'application/json',
     Method: 'GET',
   };

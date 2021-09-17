@@ -28,7 +28,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _a, _b;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.addUrlSourceToCard = exports.getCardAttachments = exports.updateCard = exports.createCard = exports.getCardsOfList = exports.getListsOnBoard = exports.getMembersOfBoard = exports.getLabelsOfBoard = void 0;
 const core = __importStar(__nccwpck_require__(3020));
@@ -37,8 +36,8 @@ const utils_1 = __nccwpck_require__(2477);
 const apiBaseUrl = 'https://api.trello.com/1';
 const debug = core.getInput('verbose');
 const trelloBoard = (0, utils_1.boardId)();
-const apiKey = ((_a = process === null || process === void 0 ? void 0 : process.env) === null || _a === void 0 ? void 0 : _a.TRELLO_API_KEY) || '';
-const apiToken = ((_b = process === null || process === void 0 ? void 0 : process.env) === null || _b === void 0 ? void 0 : _b.TRELLO_API_TOKEN) || '';
+const apiKey = process.env.TRELLO_API_KEY || '';
+const apiToken = process.env.TRELLO_API_TOKEN || '';
 if (!apiKey || !apiToken) {
     throw Error('Trello API key and/or token is missing.');
 }
@@ -59,9 +58,6 @@ const buildApiUri = (endpoint, additionalReqeustParameters) => `${apiBaseUrl}${e
  */
 const apiBaseHeaders = () => {
     return {
-        // Authorization: 'OAuth oauth_consumer_key="' + apiKey + '", oauth_token="' + apiToken + '"',
-        redirect: 'follow',
-        follow: 5,
         Accept: 'application/json',
         Method: 'GET',
     };
