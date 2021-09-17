@@ -11,7 +11,9 @@ import {
   updateCard,
   getCardAttachments,
   addUrlSourceToCard,
+  cardParams,
 } from './api';
+import { TrelloCard, TrelloMember } from './types';
 
 import { validateListExistsOnBoard, boardId } from './utils';
 
@@ -61,8 +63,8 @@ function issueOpenedCreateCard() {
   const issueTitle = issue?.title;
   const issueBody = issue?.body;
   const issueUrl = issue?.html_url;
-  const issueAssigneeNicks = issue?.assignees.map((assignee) => assignee.login);
-  const issueLabelNames = issue?.labels.map((label) => label.name);
+  const issueAssigneeNicks = issue?.assignees.map((assignee: any) => assignee.login);
+  const issueLabelNames = issue?.labels.map((label: any) => label.name);
   if (debug) {
     console.log(
       JSON.stringify(
@@ -80,39 +82,40 @@ function issueOpenedCreateCard() {
       ),
     );
   }
-  try {
-    const listId: string = process.env.TRELLO_LIST_ID as string;
-    validateListExistsOnBoard(listId);
-  } catch (error) {
-    core.setFailed(error as Error);
+  const listId: string = process.env.TRELLO_LIST_ID as string;
+  const trelloLabelIds: string[] = [];
+  const memberIds: string[] = [];
+
+  if (!validateListExistsOnBoard(listId)) {
+    core.setFailed('TRELLO_LIST_ID is not valid.');
     return;
   }
-  let trelloLabelIds: string[] = [];
-  let memberIds: string[] = [];
 
-  const labels = getLabelsOfBoard().then(function (response) {
-    const trelloLabels = response;
-    trelloLabels.filter((trelloLabel) => issueLabelNames.indexof(trelloLabel.name) !== -1);
-    trelloLabelIds.push(trelloLabels.map((label) => label.id));
+  const getLabels = getLabelsOfBoard().then((trelloLabels) => {
+    const intersection = trelloLabels.filter((label) => issueLabelNames.includes(label.name));
+    const matchingLabelIds = intersection.map((trelloLabel) => trelloLabel.id);
+    trelloLabelIds.push(...matchingLabelIds);
   });
 
-  const members = getMembersOfBoard(trelloBoard).then(function (response) {
-    const members = response;
-    members.filter((member) => issueAssigneeNicks.indexof(member.username) !== -1);
-    memberIds.push(members.map((member) => member.id));
+  const getMembers = getMembersOfBoard().then((trelloMembers) => {
+    const membersOnBothSides = trelloMembers.filter((member) =>
+      issueAssigneeNicks.includes(member.username),
+    );
+    const matchingMemberIds = membersOnBothSides.map((trelloMember) => trelloMember.id);
+    memberIds.push(...matchingMemberIds);
   });
 
-  Promise.all([labels, members]).then(() => {
-    const cardParams = {
+  Promise.all([getLabels, getMembers]).then(() => {
+    const params = {
       number: issueNumber,
       title: issueTitle,
       description: issueBody,
       sourceUrl: issueUrl,
       memberIds: memberIds.join(),
       labelIds: trelloLabelIds.join(),
-    };
+    } as unknown as cardParams;
 
-    createCard(listId, cardParams).then((response) => {
+    createCard(listId, params).then((response) => {
       if (debug)
         console.log(
           `createCard got response:`,
@@ -122,12 +125,7 @@ function issueOpenedCreateCard() {
     });
   });
 }
-interface GH_PR {
-  [key: string]: any;
-  number: number;
-  html_url?: string;
-  body?: string;
-}
+
 function pullRequestEventMoveCard() {
   const payLoad: WebhookPayload = github.context.payload;
   const eventName: string = github.context.eventName;
@@ -151,77 +149,68 @@ function pullRequestEventMoveCard() {
       ),
     );
   }
-  try {
-    const sourceList: string = process.env.TRELLO_SOURCE_LIST_ID as string;
-    const targetList: string = process.env.TRELLO_TARGET_LIST_ID as string;
-    const syncMembers: string = process.env.TRELLO_SYNC_BOARD_MEMBERS as string;
+  const sourceList: string = process.env.TRELLO_SOURCE_LIST_ID as string;
+  const targetList: string = process.env.TRELLO_TARGET_LIST_ID as string;
+  const syncMembers: string = process.env.TRELLO_SYNC_BOARD_MEMBERS as string;
+  const additionalMemberIds: string[] = [];
 
-    if (!sourceList || !targetList) {
-      throw Error("Trello's source and target list IDs must be present when moving card around.");
-    }
-
-    validateListExistsOnBoard(sourceList);
-    validateListExistsOnBoard(targetList);
-  } catch (error) {
-    core.setFailed(error as Error);
+  if (
+    !sourceList ||
+    !targetList ||
+    !validateListExistsOnBoard(sourceList) ||
+    !validateListExistsOnBoard(targetList)
+  ) {
+    core.setFailed('TRELLO_SOURCE_LIST_ID or TRELLO_TARGET_LIST_ID is invalid.');
     return;
   }
 
-  getMembersOfBoard()
-    .then((response) => {
-      if (syncMembers.length === 0) {
-        const prReviewers: string[] = pullRequest?.requested_reviewers.map(
-          (reviewer: any) => reviewer.login as string,
-        );
-        const members: [] = response;
-        const additionalMemberIds: string[] = [];
-        prReviewers.forEach(function (reviewer) {
-          members.forEach((member) => {
-            if (member.username == reviewer) {
-              additionalMemberIds[member.username] = member.id;
-            }
-          });
-        });
-        console.log('Additional members: ' + JSON.stringify(additionalMemberIds, undefined, 2));
-      }
-    })
-    .then(() => {
-      getCardsOfList(sourceList).then((response) => {
-        const cards = response;
-        const prIssuesReferenced: string[] = pullRequest?.body?.match(/#[1-9][0-9]*/) || [];
-        const prUrl: string = pullRequest?.html_url || '';
-
-        let cardId;
-        let existingMemberIds = [];
-        cards.some(function (card) {
-          const haystack = `${card.name} ${card.desc}`;
-          const card_issue_numbers = haystack.match(/#[0-9][1-9]*/) || [];
-          if (debug) {
-            console.log('card_issue_numbers', JSON.stringify(card_issue_numbers, undefined, 2));
+  const getMembers = getMembersOfBoard().then((membersOfBoard) => {
+    if (!syncMembers) {
+      const prReviewers: string[] = pullRequest?.requested_reviewers.map(
+        (reviewer: any) => reviewer.login as string,
+      );
+      const members: TrelloMember[] = membersOfBoard;
+      const additionalMemberIds: string[] = [];
+      prReviewers.forEach((reviewer) => {
+        members.forEach((member) => {
+          if (member.username == reviewer) {
+            console.log('Adding member ' + member.username + ' to the existing card (to be moved)');
+            additionalMemberIds.push(member.id);
           }
-          card_issue_numbers.forEach((card_issue_number) => {
-            if ((card_issue_number && prIssuesReferenced.indexOf(card_issue_number)) !== -1) {
-              cardId = card.id;
-              existingMemberIds.push(card.idMembers);
-              return false;
-            }
-          });
         });
-        const cardParams = {
-          destinationListId: targetList,
-          memberIds: existingMemberIds.concat(additionalMemberIds).join(),
-        };
+      });
+    }
+  });
 
-        if (cardId) {
-          updateCard(cardId, cardParams).then(function (response) {
-            getCardAttachments(cardId).then((response) => {
-              console.log('getCardAttachments response: ', JSON.stringify(response, undefined, 2));
-            });
-            addUrlSourceToCard(cardId, prUrl);
-          });
-        } else {
-          core.setFailed('Card not found.');
-        }
+  const cardsToBeMoved = getCardsOfList(sourceList).then((cardsOnList) => {
+    const referencedIssuesInGh: string[] = pullRequest?.body?.match(/#[1-9][0-9]*/) || [];
+
+    return cardsOnList.filter((card) => {
+      const haystack = `${card.name} ${card.desc}`;
+      const issueRefsOnCurrentCard = haystack.match(/#[0-9][1-9]*/) || [];
+      if (debug) {
+        console.log('issueRefsOnCurrentCard', JSON.stringify(issueRefsOnCurrentCard, undefined, 2));
+      }
+      const crossMatchIssues = issueRefsOnCurrentCard.filter((issueRef) =>
+        referencedIssuesInGh.includes(issueRef),
+      );
+      return crossMatchIssues.length !== 0;
+    });
+  });
+
+  Promise.all([getMembers, cardsToBeMoved]).then((values) => {
+    const params = {
+      destinationListId: targetList,
+      memberIds: additionalMemberIds.join(),
+    };
+
+    values[1].forEach((card) => {
+      updateCard(card.id, params).then((trelloCard: TrelloCard) => {
+        getCardAttachments(card.id).then((response) => {
+          console.log('getCardAttachments response: ', JSON.stringify(response, undefined, 2));
+        });
+        addUrlSourceToCard(card.id, pullRequest?.html_url || '');
       });
     });
+  });
 }

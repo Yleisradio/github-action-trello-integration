@@ -2,7 +2,7 @@ import * as core from '@actions/core';
 import fetch from 'node-fetch';
 import { boardId } from './utils';
 import { RequestInit } from 'node-fetch';
-import { TrelloList } from './types';
+import { TrelloLabel, TrelloList, TrelloMember, TrelloCard, TrelloAttachment } from './types';
 
 const apiBaseUrl = 'https://api.trello.com/1';
 const debug = core.getInput('verbose');
@@ -12,7 +12,7 @@ console.log(`trelloBoard: ${trelloBoard}`);
 console.log(`boardId(): ${boardId()}`);
 
 interface cardParams {
-  number: string;
+  number?: string;
   title?: string;
   description?: string;
   sourceUrl?: string;
@@ -60,7 +60,7 @@ const apiBaseHeaders = (): object => {
  *
  * @returns Object[]
  */
-function getLabelsOfBoard(): Promise<unknown> {
+function getLabelsOfBoard(): Promise<TrelloLabel[]> {
   const endpoint = `/boards/${trelloBoard}/labels`;
   const options: RequestInit = { ...(apiBaseHeaders() as RequestInit) };
   const functionName = 'getLabelsOfBoard()';
@@ -82,7 +82,7 @@ function getLabelsOfBoard(): Promise<unknown> {
         }
         return [];
       } else {
-        const data = response.json();
+        const data = response.json() as unknown as TrelloLabel[];
         if (debug) {
           console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
         }
@@ -99,7 +99,7 @@ function getLabelsOfBoard(): Promise<unknown> {
  *
  * @returns Object[]
  */
-function getMembersOfBoard(): Promise<unknown> {
+function getMembersOfBoard(): Promise<TrelloMember[]> {
   const endpoint = `/boards/${trelloBoard}/members`;
   const options: RequestInit = { ...(apiBaseHeaders() as RequestInit) };
   const functionName = 'getMembersOfBoard()';
@@ -121,7 +121,7 @@ function getMembersOfBoard(): Promise<unknown> {
         }
         return [];
       } else {
-        const data = response.json();
+        const data = response.json() as unknown as TrelloMember[];
         if (debug) {
           console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
         }
@@ -182,7 +182,7 @@ function getListsOnBoard(): Promise<TrelloList[]> {
  * @param {*} listId
  * @returns
  */
-function getCardsOfList(listId: string): Promise<unknown> {
+function getCardsOfList(listId: string): Promise<TrelloCard[]> {
   const endpoint = `/lists/${listId}/cards`;
   const options: RequestInit = { ...(apiBaseHeaders() as RequestInit) };
   const functionName = 'getCardsOfList()';
@@ -204,7 +204,7 @@ function getCardsOfList(listId: string): Promise<unknown> {
         }
         return [];
       } else {
-        const data = response.json();
+        const data = response.json() as unknown as TrelloCard[];
         if (debug) {
           console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
         }
@@ -220,10 +220,10 @@ function getCardsOfList(listId: string): Promise<unknown> {
  * https://developer.atlassian.com/cloud/trello/rest/api-group-cards/#api-cards-post
 
  * @param {string} listId
- * @param {*} params
+ * @param {cardParams} params
  * @returns Card
  */
-function createCard(listId: string, params: cardParams): Promise<unknown> {
+function createCard(listId: string, params: cardParams): Promise<TrelloCard> {
   const endpoint = `/cards`;
   const options = {
     ...(apiBaseHeaders() as RequestInit),
@@ -259,7 +259,7 @@ function createCard(listId: string, params: cardParams): Promise<unknown> {
         }
         return [];
       } else {
-        const data = response.json();
+        const data = response.json() as unknown as TrelloCard;
         if (debug) {
           console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
         }
@@ -277,7 +277,7 @@ function createCard(listId: string, params: cardParams): Promise<unknown> {
  * @param {*} params
  * @returns
  */
-function updateCard(cardId: string, params: cardParams): Promise<unknown> {
+function updateCard(cardId: string, params: cardParams): Promise<TrelloCard> {
   const endpoint = `/cards/${cardId}`;
   const options = {
     ...apiBaseHeaders(),
@@ -306,7 +306,7 @@ function updateCard(cardId: string, params: cardParams): Promise<unknown> {
         }
         return [];
       } else {
-        const data = response.json();
+        const data = response.json() as unknown as TrelloCard;
         if (debug) {
           console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
         }
@@ -324,7 +324,7 @@ function updateCard(cardId: string, params: cardParams): Promise<unknown> {
  * @param {*} cardId
  * @returns Attachment[]
  */
-function getCardAttachments(cardId: string): Promise<unknown> {
+function getCardAttachments(cardId: string): Promise<TrelloAttachment[]> {
   const endpoint = `/cards/${cardId}/attachments`;
   const options = { ...apiBaseHeaders() };
 
@@ -347,7 +347,7 @@ function getCardAttachments(cardId: string): Promise<unknown> {
         }
         return [];
       } else {
-        const data = response.json();
+        const data = response.json() as unknown as TrelloAttachment[];
         if (debug) {
           console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
         }
@@ -366,7 +366,7 @@ function getCardAttachments(cardId: string): Promise<unknown> {
  * @param {*} url
  * @returns
  */
-function addUrlSourceToCard(cardId: string, url: string) {
+function addUrlSourceToCard(cardId: string, url: string): Promise<TrelloAttachment[]> {
   const endpoint = `/cards/${cardId}/attachments`;
   const options = {
     ...apiBaseHeaders(),
@@ -397,7 +397,7 @@ function addUrlSourceToCard(cardId: string, url: string) {
         }
         return [];
       } else {
-        const data = response.json();
+        const data = response.json() as unknown as TrelloAttachment[];
         if (debug) {
           console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
         }
@@ -416,4 +416,5 @@ export {
   updateCard,
   getCardAttachments,
   addUrlSourceToCard,
+  cardParams,
 };
