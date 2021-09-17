@@ -135,15 +135,15 @@ function getMembersOfBoard() {
 }
 exports.getMembersOfBoard = getMembersOfBoard;
 /**
- * Gets all (open) lists on Board.
+ * Get Lists on a Board (filter to open lists)
  *
- * https://developer.atlassian.com/cloud/trello/guides/rest-api/nested-resources/#lists-nested-resource
+ * https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-lists-get
  *
  * @returns Object[]
  */
 function getListsOnBoard() {
     // We are only interested in open lists.
-    const endpoint = `/object/${trelloBoard}/lists??fields=all&filter==open`;
+    const endpoint = `/boards/${trelloBoard}/lists?filter=open`;
     const options = Object.assign({}, apiBaseHeaders());
     const functionName = 'getListsOnBoard()';
     if (debug) {
