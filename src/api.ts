@@ -56,7 +56,7 @@ const apiBaseHeaders = (): object => {
  */
 function getLabelsOfBoard(): Promise<TrelloLabel[]> {
   const endpoint = `/boards/${trelloBoard}/labels`;
-  const options: RequestInit = { ...(apiBaseHeaders as RequestInit) };
+  const options: RequestInit = { ...(apiBaseHeaders() as RequestInit) };
   const functionName = 'getLabelsOfBoard()';
 
   if (debug) {
@@ -152,20 +152,13 @@ function getListsOnBoard(): Promise<TrelloList[]> {
   }
   return fetch(buildApiUri(endpoint, endpointArgs), options)
     .then((response: Response) => {
-      console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
-      console.log(response);
       if (!response.ok) {
         console.error(
           `Request to ${endpoint} failed, status ${response.status} ${response.statusText}`,
         );
         return [];
       }
-      const data = response.json() as unknown as TrelloList[];
-      if (debug) {
-        console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-      }
-
-      return data;
+      return response.json() as unknown as TrelloList[];
     })
     .catch((error) => error);
 }

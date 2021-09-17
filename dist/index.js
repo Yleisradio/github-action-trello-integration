@@ -71,7 +71,7 @@ const apiBaseHeaders = () => {
  */
 function getLabelsOfBoard() {
     const endpoint = `/boards/${trelloBoard}/labels`;
-    const options = Object.assign({}, apiBaseHeaders);
+    const options = Object.assign({}, apiBaseHeaders());
     const functionName = 'getLabelsOfBoard()';
     if (debug) {
         console.log(` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(options, undefined, 2)}`);
@@ -149,17 +149,11 @@ function getListsOnBoard() {
     }
     return (0, node_fetch_1.default)(buildApiUri(endpoint, endpointArgs), options)
         .then((response) => {
-        console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
-        console.log(response);
         if (!response.ok) {
             console.error(`Request to ${endpoint} failed, status ${response.status} ${response.statusText}`);
             return [];
         }
-        const data = response.json();
-        if (debug) {
-            console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-        }
-        return data;
+        return response.json();
     })
         .catch((error) => error);
 }
@@ -608,6 +602,9 @@ const validateListExistsOnBoard = (listId) => __awaiter(void 0, void 0, void 0, 
         return false;
     }
     const listsOnBoard = yield (0, api_1.getListsOnBoard)();
+    if (debug) {
+        console.log({ listsOnBoard: listsOnBoard });
+    }
     const matching = listsOnBoard.filter((list) => list.id === listId);
     if (matching.length === 0) {
         console.error('List id is not valid (pattern): ' + listId);

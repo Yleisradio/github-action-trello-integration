@@ -29,6 +29,9 @@ const validateListExistsOnBoard = async (listId: string) => {
     return false;
   }
   const listsOnBoard = await getListsOnBoard();
+  if (debug) {
+    console.log({ listsOnBoard: listsOnBoard });
+  }
   const matching = listsOnBoard.filter((list) => list.id === listId);
   if (matching.length === 0) {
     console.error('List id is not valid (pattern): ' + listId);
