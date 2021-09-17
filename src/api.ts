@@ -1,5 +1,5 @@
 import * as core from '@actions/core';
-import fetch from 'node-fetch';
+import fetch, { Response } from 'node-fetch';
 import { boardId } from './utils';
 import { RequestInit } from 'node-fetch';
 import { TrelloLabel, TrelloList, TrelloMember, TrelloCard, TrelloAttachment } from './types';
@@ -157,9 +157,13 @@ function getListsOnBoard(): Promise<TrelloList[]> {
     );
   }
   return fetch(buildApiUri(endpoint), options)
-    .then((response) => {
+    .then((response: Response) => {
       console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
+      console.log(response);
       if (!response.ok) {
+        console.error(
+          `Request to ${endpoint} failed, status ${response.status} ${response.statusText}`,
+        );
         return [];
       }
       const data = response.json() as unknown as TrelloList[];
