@@ -158,17 +158,14 @@ function getListsOnBoard(): Promise<TrelloList[]> {
   }
   return fetch(buildApiUri(endpoint), options)
     .then((response) => {
-      if (debug) {
-        console.log(`${functionName} got response:`, JSON.stringify(response.text(), undefined, 2));
-      }
       if (!response.ok) {
         return [];
       }
       const data = response.json() as unknown as TrelloList[];
-
       if (debug) {
         console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
       }
+
       return data;
     })
     .catch((error) => error);
