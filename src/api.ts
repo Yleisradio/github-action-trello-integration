@@ -158,6 +158,7 @@ function getListsOnBoard(): Promise<TrelloList[]> {
   }
   return fetch(buildApiUri(endpoint), options)
     .then((response) => {
+      console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
       if (!response.ok) {
         return [];
       }

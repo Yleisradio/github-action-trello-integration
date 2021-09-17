@@ -154,6 +154,7 @@ function getListsOnBoard() {
     }
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
         .then((response) => {
+        console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
         if (!response.ok) {
             return [];
         }
