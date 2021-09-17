@@ -48,7 +48,14 @@ if (!apiKey || !apiToken) {
  * @param {string} endpoint
  * @returns string
  */
-const buildApiUri = (endpoint) => `${apiBaseUrl}${endpoint}?key=${apiKey}&token=${apiToken}`;
+const buildApiUri = (endpoint) => {
+    if (endpoint.includes('?')) {
+        return `${apiBaseUrl}${endpoint}?key=${apiKey}&token=${apiToken}`;
+    }
+    else {
+        return `${apiBaseUrl}${endpoint}&key=${apiKey}&token=${apiToken}`;
+    }
+};
 /**
  * Base headers for REST API  authentication et al.
  *
