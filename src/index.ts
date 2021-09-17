@@ -11,12 +11,17 @@ import {
   addUrlSourceToCard,
   cardParams,
 } from './api';
-import { TrelloCard, TrelloMember } from './types';
+import { TrelloAttachment, TrelloCard } from './types';
 
-import { validateListExistsOnBoard, boardId } from './utils';
+import { validateListExistsOnBoard } from './utils';
 
 const debug = core.getInput('verbose');
 const action = core.getInput('action');
+/**
+ * GW webhook payload.
+ *
+ * @see https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#webhook-payload-example-48
+ */
 const ghPayload: any = github.context.payload;
 
 if (!action) {
@@ -24,8 +29,9 @@ if (!action) {
 }
 
 if (debug) {
-  console.log({ ghPayload: JSON.stringify(ghPayload, undefined, 2) });
-  console.log(`Selected action is ${action}`);
+  console.log(`Selected action (input from workflow) is ${action}`);
+  console.log({ github: JSON.stringify(github) });
+  // console.log({ github: JSON.stringify(github, undefined, 2) });
 }
 try {
   switch (action) {
@@ -44,17 +50,8 @@ try {
 }
 
 function issueOpenedCreateCard() {
-  core.info(`The head commit is: ${ghPayload.head_commit}`);
-
-  let issue, issueEventName;
-  try {
-    issue = ghPayload.issue;
-    issueEventName = github.context.eventName;
-  } catch (error) {
-    console.log('github', JSON.stringify(github, undefined, 2));
-    console.log(error);
-    console.trace();
-  }
+  const issue = ghPayload.issue;
+  const issueEventName = github.context.eventName;
   const issueNumber = issue?.number;
   const issueTitle = issue?.title;
   const issueBody = issue?.body;
@@ -65,8 +62,11 @@ function issueOpenedCreateCard() {
     console.log(
       JSON.stringify(
         {
-          issueNumber: issueNumber,
+          function: 'issueOpenedCreateCard()',
+          issue: issue,
+          githubContext: github.context,
           issueEventName: issueEventName,
+          issueNumber: issueNumber,
           issueTitle: issueTitle,
           issueBody: issueBody,
           issueUrl: issueUrl,
@@ -110,6 +110,8 @@ function issueOpenedCreateCard() {
       memberIds: memberIds.join(),
       labelIds: trelloLabelIds.join(),
     } as unknown as cardParams;
+
+    console.log(`Creating new card to ${listId} from issue  "[#${issueNumber}] ${issueTitle}"`);
 
     createCard(listId, params).then((response) => {
       if (debug)
@@ -160,14 +162,13 @@ function pullRequestEventMoveCard() {
   }
 
   const getMembers = getMembersOfBoard().then((membersOfBoard) => {
-    if (!syncMembers) {
+    if (syncMembers) {
       const prReviewers: string[] = pullRequest?.requested_reviewers.map(
         (reviewer: any) => reviewer.login as string,
       );
-      const members: TrelloMember[] = membersOfBoard;
       const additionalMemberIds: string[] = [];
       prReviewers.forEach((reviewer) => {
-        members.forEach((member) => {
+        membersOfBoard.forEach((member) => {
           if (member.username == reviewer) {
             console.log('Adding member ' + member.username + ' to the existing card (to be moved)');
             additionalMemberIds.push(member.id);
@@ -193,16 +194,22 @@ function pullRequestEventMoveCard() {
     });
   });
 
-  Promise.all([getMembers, cardsToBeMoved]).then((values) => {
+  Promise.all([getMembers, cardsToBeMoved]).then((promiseValues) => {
     const params = {
       destinationListId: targetList,
       memberIds: additionalMemberIds.join(),
     };
 
-    values[1].forEach((card) => {
+    promiseValues[1].forEach((card) => {
       updateCard(card.id, params).then((trelloCard: TrelloCard) => {
-        getCardAttachments(card.id).then((response) => {
-          console.log('getCardAttachments response: ', JSON.stringify(response, undefined, 2));
+        getCardAttachments(trelloCard.id).then((cardAttachments: TrelloAttachment[]) => {
+          console.log(
+            'getCardAttachments response: ',
+            JSON.stringify(cardAttachments, undefined, 2),
+          );
+          const cardsWithRepoReference = cardAttachments.filter((cardAttachment) =>
+            cardAttachment.url.substr(0),
+          );
         });
         addUrlSourceToCard(card.id, pullRequest?.html_url || '');
       });

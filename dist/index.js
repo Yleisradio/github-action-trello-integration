@@ -392,13 +392,19 @@ const api_1 = __nccwpck_require__(4346);
 const utils_1 = __nccwpck_require__(2477);
 const debug = core.getInput('verbose');
 const action = core.getInput('action');
+/**
+ * GW webhook payload.
+ *
+ * @see https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#webhook-payload-example-48
+ */
 const ghPayload = github.context.payload;
 if (!action) {
     throw Error('Action is not set.');
 }
 if (debug) {
-    console.log({ ghPayload: JSON.stringify(ghPayload, undefined, 2) });
-    console.log(`Selected action is ${action}`);
+    console.log(`Selected action (input from workflow) is ${action}`);
+    console.log({ github: JSON.stringify(github) });
+    // console.log({ github: JSON.stringify(github, undefined, 2) });
 }
 try {
     switch (action) {
@@ -416,17 +422,8 @@ catch (error) {
     core.setFailed(error);
 }
 function issueOpenedCreateCard() {
-    core.info(`The head commit is: ${ghPayload.head_commit}`);
-    let issue, issueEventName;
-    try {
-        issue = ghPayload.issue;
-        issueEventName = github.context.eventName;
-    }
-    catch (error) {
-        console.log('github', JSON.stringify(github, undefined, 2));
-        console.log(error);
-        console.trace();
-    }
+    const issue = ghPayload.issue;
+    const issueEventName = github.context.eventName;
     const issueNumber = issue === null || issue === void 0 ? void 0 : issue.number;
     const issueTitle = issue === null || issue === void 0 ? void 0 : issue.title;
     const issueBody = issue === null || issue === void 0 ? void 0 : issue.body;
@@ -435,8 +432,11 @@ function issueOpenedCreateCard() {
     const issueLabelNames = issue === null || issue === void 0 ? void 0 : issue.labels.map((label) => label.name);
     if (debug) {
         console.log(JSON.stringify({
-            issueNumber: issueNumber,
+            function: 'issueOpenedCreateCard()',
+            issue: issue,
+            githubContext: github.context,
             issueEventName: issueEventName,
+            issueNumber: issueNumber,
             issueTitle: issueTitle,
             issueBody: issueBody,
             issueUrl: issueUrl,
@@ -470,6 +470,7 @@ function issueOpenedCreateCard() {
             memberIds: memberIds.join(),
             labelIds: trelloLabelIds.join(),
         };
+        console.log(`Creating new card to ${listId} from issue  "[#${issueNumber}] ${issueTitle}"`);
         (0, api_1.createCard)(listId, params).then((response) => {
             if (debug)
                 console.log(`createCard got response:`, `Card created: [#${issueNumber}] ${issueTitle}`, JSON.stringify(response, undefined, 2));
@@ -503,12 +504,11 @@ function pullRequestEventMoveCard() {
         return;
     }
     const getMembers = (0, api_1.getMembersOfBoard)().then((membersOfBoard) => {
-        if (!syncMembers) {
+        if (syncMembers) {
             const prReviewers = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers.map((reviewer) => reviewer.login);
-            const members = membersOfBoard;
             const additionalMemberIds = [];
             prReviewers.forEach((reviewer) => {
-                members.forEach((member) => {
+                membersOfBoard.forEach((member) => {
                     if (member.username == reviewer) {
                         console.log('Adding member ' + member.username + ' to the existing card (to be moved)');
                         additionalMemberIds.push(member.id);
@@ -530,15 +530,16 @@ function pullRequestEventMoveCard() {
             return crossMatchIssues.length !== 0;
         });
     });
-    Promise.all([getMembers, cardsToBeMoved]).then((values) => {
+    Promise.all([getMembers, cardsToBeMoved]).then((promiseValues) => {
         const params = {
             destinationListId: targetList,
             memberIds: additionalMemberIds.join(),
         };
-        values[1].forEach((card) => {
+        promiseValues[1].forEach((card) => {
             (0, api_1.updateCard)(card.id, params).then((trelloCard) => {
-                (0, api_1.getCardAttachments)(card.id).then((response) => {
-                    console.log('getCardAttachments response: ', JSON.stringify(response, undefined, 2));
+                (0, api_1.getCardAttachments)(trelloCard.id).then((cardAttachments) => {
+                    console.log('getCardAttachments response: ', JSON.stringify(cardAttachments, undefined, 2));
+                    const cardsWithRepoReference = cardAttachments.filter((cardAttachment) => cardAttachment.url.substr(0));
                 });
                 (0, api_1.addUrlSourceToCard)(card.id, (pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.html_url) || '');
             });
