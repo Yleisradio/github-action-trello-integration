@@ -50,10 +50,10 @@ if (!apiKey || !apiToken) {
  */
 const buildApiUri = (endpoint) => {
     if (endpoint.includes('?')) {
-        return `${apiBaseUrl}${endpoint}?key=${apiKey}&token=${apiToken}`;
+        return `${apiBaseUrl}${endpoint}&key=${apiKey}&token=${apiToken}`;
     }
     else {
-        return `${apiBaseUrl}${endpoint}&key=${apiKey}&token=${apiToken}`;
+        return `${apiBaseUrl}${endpoint}?key=${apiKey}&token=${apiToken}`;
     }
 };
 /**
