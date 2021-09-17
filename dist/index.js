@@ -390,17 +390,17 @@ const core = __importStar(__nccwpck_require__(3020));
 const github = __importStar(__nccwpck_require__(2165));
 const api_1 = __nccwpck_require__(4346);
 const utils_1 = __nccwpck_require__(2477);
-const trelloBoard = (0, utils_1.boardId)();
-var debug = '';
-var action = '';
+const debug = core.getInput('verbose');
+const action = core.getInput('action');
+const ghPayload = github.context.payload;
+if (!action) {
+    throw Error('Action is not set.');
+}
+if (debug) {
+    console.log({ ghPayload: JSON.stringify(ghPayload, undefined, 2) });
+    console.log(`Selected action is ${action}`);
+}
 try {
-    action = core.getInput('action');
-    if (!action) {
-        throw Error('Action is not set.');
-    }
-    if (debug) {
-        console.log(`Selected action is ${action}`);
-    }
     switch (action) {
         case 'issue_opened_create_card':
             issueOpenedCreateCard();
@@ -414,14 +414,12 @@ try {
 }
 catch (error) {
     core.setFailed(error);
-    console.trace();
 }
 function issueOpenedCreateCard() {
-    const pushPayload = github.context.payload;
-    core.info(`The head commit is: ${pushPayload.head_commit}`);
+    core.info(`The head commit is: ${ghPayload.head_commit}`);
     let issue, issueEventName;
     try {
-        issue = github.context.payload.issue;
+        issue = ghPayload.issue;
         issueEventName = github.context.eventName;
     }
     catch (error) {
@@ -479,9 +477,8 @@ function issueOpenedCreateCard() {
     });
 }
 function pullRequestEventMoveCard() {
-    const payLoad = github.context.payload;
     const eventName = github.context.eventName;
-    const pullRequest = payLoad.pull_request;
+    const pullRequest = ghPayload.pull_request;
     if (debug) {
         console.log('github', JSON.stringify(github, undefined, 2));
         console.log(JSON.stringify({

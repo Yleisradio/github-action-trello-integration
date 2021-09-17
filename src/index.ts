@@ -1,7 +1,5 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { WebhookPayload } from '@actions/github/lib/interfaces';
-import { PushEvent } from '@octokit/webhooks-definitions/schema';
 
 import {
   getLabelsOfBoard,
@@ -17,19 +15,19 @@ import { TrelloCard, TrelloMember } from './types';
 
 import { validateListExistsOnBoard, boardId } from './utils';
 
-const trelloBoard: string = boardId();
+const debug = core.getInput('verbose');
+const action = core.getInput('action');
+const ghPayload: any = github.context.payload;
 
-var debug: string = '';
-var action: string = '';
+if (!action) {
+  throw Error('Action is not set.');
+}
+
+if (debug) {
+  console.log({ ghPayload: JSON.stringify(ghPayload, undefined, 2) });
+  console.log(`Selected action is ${action}`);
+}
 try {
-  action = core.getInput('action');
-  if (!action) {
-    throw Error('Action is not set.');
-  }
-
-  if (debug) {
-    console.log(`Selected action is ${action}`);
-  }
   switch (action) {
     case 'issue_opened_create_card':
       issueOpenedCreateCard();
@@ -43,16 +41,14 @@ try {
   }
 } catch (error) {
   core.setFailed(error as Error);
-  console.trace();
 }
 
 function issueOpenedCreateCard() {
-  const pushPayload: PushEvent = github.context.payload as any as PushEvent;
-  core.info(`The head commit is: ${pushPayload.head_commit}`);
+  core.info(`The head commit is: ${ghPayload.head_commit}`);
 
   let issue, issueEventName;
   try {
-    issue = github.context.payload.issue;
+    issue = ghPayload.issue;
     issueEventName = github.context.eventName;
   } catch (error) {
     console.log('github', JSON.stringify(github, undefined, 2));
@@ -127,9 +123,8 @@ function issueOpenedCreateCard() {
 }
 
 function pullRequestEventMoveCard() {
-  const payLoad: WebhookPayload = github.context.payload;
   const eventName: string = github.context.eventName;
-  const pullRequest = payLoad.pull_request;
+  const pullRequest = ghPayload.pull_request;
 
   if (debug) {
     console.log('github', JSON.stringify(github, undefined, 2));
