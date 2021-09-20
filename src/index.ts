@@ -171,13 +171,30 @@ function pullRequestEventMoveCard() {
         memberIds: additionalMemberIds.join(),
       };
       cardsToBeMoved.forEach((card) => {
+        if (debug) {
+          console.log(`Moving card "${card.name}" to board to ${targetList}.`);
+        }
         updateCard(card.id, params)
           .then((trelloCard) => {
             if (typeof trelloCard === 'string') {
               core.setFailed(trelloCard);
               return;
             }
-            addAttachmentToCard(card.id, pullRequest?.html_url || '');
+            if (debug) {
+              console.log(`Card "${card.name}" moved to board ${targetList}.`);
+              console.log(`Adding link (attachment) to pull request to the card "${card.name}".`);
+            }
+            addAttachmentToCard(card.id, pullRequest?.html_url || '').then((attachment) => {
+              if (typeof attachment === 'string') {
+                core.setFailed(attachment);
+                return;
+              }
+              if (debug) {
+                console.log(
+                  `Link (attachment) to pull request URL ${attachment.url} added to the card "${card.name}".`,
+                );
+              }
+            });
           })
           .catch((error) => {
             console.error(error);
