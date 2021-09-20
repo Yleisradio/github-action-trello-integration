@@ -427,7 +427,6 @@ function pullRequestEventMoveCard() {
     const pullRequest = ghPayload.pull_request;
     const repoHtmlUrl = ((_a = github.context.payload.repository) === null || _a === void 0 ? void 0 : _a.html_url) || 'URL missing in GH payload';
     if (debug) {
-        console.log('github', JSON.stringify(github, undefined, 2));
         console.log(JSON.stringify({
             prNumber: pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.number,
             issueEventName: eventName,
@@ -458,6 +457,9 @@ function pullRequestEventMoveCard() {
             return [];
         }
         const referencedIssuesInGh = ((_a = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.body) === null || _a === void 0 ? void 0 : _a.match(/#[1-9][0-9]*/)) || [];
+        if (debug) {
+            console.log('referencedIssuesInGh', JSON.stringify(referencedIssuesInGh, undefined, 2));
+        }
         return cardsOnList
             .filter((card) => {
             const haystack = `${card.name} ${card.desc}`;

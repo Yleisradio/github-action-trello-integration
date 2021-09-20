@@ -118,7 +118,6 @@ function pullRequestEventMoveCard() {
   const repoHtmlUrl = github.context.payload.repository?.html_url || 'URL missing in GH payload';
 
   if (debug) {
-    console.log('github', JSON.stringify(github, undefined, 2));
     console.log(
       JSON.stringify(
         {
@@ -158,6 +157,9 @@ function pullRequestEventMoveCard() {
         return [];
       }
       const referencedIssuesInGh: string[] = pullRequest?.body?.match(/#[1-9][0-9]*/) || [];
+      if (debug) {
+        console.log('referencedIssuesInGh', JSON.stringify(referencedIssuesInGh, undefined, 2));
+      }
 
       return cardsOnList
         .filter((card) => {
