@@ -10,7 +10,6 @@ import {
   TrelloAttachment,
   TrelloCardRequestParams,
 } from './types';
-import { StreamState } from 'http2';
 
 const apiBaseUrl = 'https://api.trello.com/1';
 const debug = core.getInput('verbose');
@@ -149,17 +148,18 @@ function getListsOnBoard(): Promise<TrelloList[] | string> {
 }
 
 /**
- * Get Cards in a List.
+ * Get Cards in a List / Board.
  *
  * https://developer.atlassian.com/cloud/trello/rest/api-group-lists/#api-lists-id-board-get
+ * https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-cards-get
  *
  * @param {*} listId
  * @returns
  */
-function getCardsOfList(listId: string): Promise<TrelloCard[] | string> {
-  const endpoint = `/lists/${listId}/cards`;
+function getCardsOfListOrBoard(listId?: string): Promise<TrelloCard[] | string> {
+  const endpoint = listId ? `/lists/${listId}/cards` : `boards/${trelloBoard}/cards`;
   const options: RequestInit = { ...(apiBaseHeaders() as RequestInit) };
-  const functionName = 'getCardsOfList()';
+  const functionName = 'getCardsOfListOrBoard()';
 
   if (debug) {
     console.log(
@@ -349,7 +349,7 @@ export {
   getLabelsOfBoard,
   getMembersOfBoard,
   getListsOnBoard,
-  getCardsOfList,
+  getCardsOfListOrBoard,
   createCard,
   updateCard,
   getCardAttachments,

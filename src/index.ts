@@ -4,7 +4,7 @@ import * as github from '@actions/github';
 import {
   getLabelsOfBoard,
   getMembersOfBoard,
-  getCardsOfList,
+  getCardsOfListOrBoard,
   createCard,
   updateCard,
   getCardAttachments,
@@ -141,35 +141,17 @@ function pullRequestEventMoveCard() {
   const additionalMemberIds: string[] = [];
 
   if (
-    !sourceList ||
+    (sourceList && !validateListExistsOnBoard(sourceList)) ||
     !targetList ||
-    !validateListExistsOnBoard(sourceList) ||
     !validateListExistsOnBoard(targetList)
   ) {
     core.setFailed('TRELLO_SOURCE_LIST_ID or TRELLO_TARGET_LIST_ID is invalid.');
     return;
   }
 
-  const getMembers = getMembersOfBoard().then((membersOfBoard) => {
-    if (typeof membersOfBoard === 'string') {
-      core.setFailed(membersOfBoard);
-      return;
-    }
-    const prReviewers: string[] = pullRequest?.requested_reviewers.map(
-      (reviewer: any) => reviewer.login as string,
-    );
-    const additionalMemberIds: string[] = [];
-    prReviewers.forEach((reviewer) => {
-      membersOfBoard.forEach((member) => {
-        if (member.username == reviewer) {
-          console.log('Adding member ' + member.username + ' to the existing card (to be moved)');
-          additionalMemberIds.push(member.id);
-        }
-      });
-    });
-  });
-
-  const cardsToBeMoved = getCardsOfList(sourceList).then((cardsOnList) => {
+  // TODO: Allow unspecified target as well so that - say - PR moves card to "Ready for review"
+  // list regardless of where it is currently.
+  const cardsToBeMoved = getCardsOfListOrBoard(sourceList).then((cardsOnList) => {
     if (typeof cardsOnList === 'string') {
       core.setFailed(cardsOnList);
       return [];
@@ -178,8 +160,22 @@ function pullRequestEventMoveCard() {
 
     return cardsOnList
       .filter((card) => {
+        const haystack = `${card.name} ${card.desc}`;
+        const issueRefsOnCurrentCard = haystack.match(/#[1-9][0-9]*/) || [];
+        if (debug) {
+          console.log(
+            'issueRefsOnCurrentCard',
+            JSON.stringify(issueRefsOnCurrentCard, undefined, 2),
+          );
+        }
+        const crossMatchIssues = issueRefsOnCurrentCard.filter((issueRef) =>
+          referencedIssuesInGh.includes(issueRef),
+        );
+        return crossMatchIssues.length !== 0;
+      })
+      .filter((card) => {
         console.log(`filtering card ${card.name} attachments.`);
-        const cardAttachments = getCardAttachments(card.id).then((attachments) => {
+        return getCardAttachments(card.id).then((attachments) => {
           if (typeof attachments === 'string') {
             return false;
           }
@@ -192,24 +188,10 @@ function pullRequestEventMoveCard() {
             return attachment.url.startsWith(repoHtmlUrl);
           });
         });
-      })
-      .filter((card) => {
-        const haystack = `${card.name} ${card.desc}`;
-        const issueRefsOnCurrentCard = haystack.match(/#[0-9][1-9]*/) || [];
-        if (debug) {
-          console.log(
-            'issueRefsOnCurrentCard',
-            JSON.stringify(issueRefsOnCurrentCard, undefined, 2),
-          );
-        }
-        const crossMatchIssues = issueRefsOnCurrentCard.filter((issueRef) =>
-          referencedIssuesInGh.includes(issueRef),
-        );
-        return crossMatchIssues.length !== 0;
       });
   });
 
-  Promise.all([getMembers, cardsToBeMoved]).then((promiseValues) => {
+  Promise.all([cardsToBeMoved]).then((promiseValues) => {
     const params = {
       destinationListId: targetList,
       memberIds: additionalMemberIds.join(),
