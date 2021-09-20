@@ -47,7 +47,7 @@ if (!apiKey || !apiToken) {
  * @param {string} endpoint
  * @returns string
  */
-const buildApiUri = (endpoint, additionalReqeustParameters) => `${apiBaseUrl}${endpoint}?${additionalReqeustParameters ? additionalReqeustParameters + '&' : ''}key=${apiKey}&token=${apiToken}`;
+const buildApiUri = (endpoint, query) => `${apiBaseUrl}${endpoint}?${query ? query + '&' : ''}key=${apiKey}&token=${apiToken}`;
 /**
  * Base headers for REST API  authentication et al.
  *
@@ -185,20 +185,21 @@ exports.getCardsOfList = getCardsOfList;
  */
 function createCard(listId, params) {
     const endpoint = `/cards`;
-    const options = Object.assign(Object.assign({}, apiBaseHeaders()), { method: 'POST', url: buildApiUri(endpoint), json: true, body: {
-            name: `[#${params.number}] ${params.title}`,
-            desc: params.description,
-            pos: 'bottom',
-            idList: listId,
-            urlSource: params.sourceUrl,
-            idMembers: params.memberIds,
-            idLabels: params.labelIds,
-        } });
+    const options = Object.assign(Object.assign({}, apiBaseHeaders()), { method: 'POST' });
+    const query = {
+        name: `[#${params.number}] ${params.title}`,
+        desc: params.description,
+        pos: 'bottom',
+        idList: listId,
+        urlSource: params.sourceUrl,
+        idMembers: params.memberIds,
+        idLabels: params.labelIds,
+    };
     const functionName = 'createCard()';
     if (debug) {
-        console.log(` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(options, undefined, 2)}`);
+        console.log(` ${functionName} calling ${buildApiUri(endpoint, query.toString())} with options: ${JSON.stringify(options, undefined, 2)}`);
     }
-    return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
+    return (0, node_fetch_1.default)(buildApiUri(endpoint, query.toString()), options)
         .then((response) => {
         if (!response.ok) {
             console.trace(JSON.stringify(response, undefined, 2));

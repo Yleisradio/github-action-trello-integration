@@ -27,10 +27,8 @@ if (!apiKey || !apiToken) {
  * @param {string} endpoint
  * @returns string
  */
-const buildApiUri = (endpoint: string, additionalReqeustParameters?: string): string =>
-  `${apiBaseUrl}${endpoint}?${
-    additionalReqeustParameters ? additionalReqeustParameters + '&' : ''
-  }key=${apiKey}&token=${apiToken}`;
+const buildApiUri = (endpoint: string, query?: string): string =>
+  `${apiBaseUrl}${endpoint}?${query ? query + '&' : ''}key=${apiKey}&token=${apiToken}`;
 
 /**
  * Base headers for REST API  authentication et al.
@@ -197,31 +195,28 @@ function createCard(listId: string, params: TrelloCardRequestParams): Promise<Tr
   const options = {
     ...(apiBaseHeaders() as RequestInit),
     method: 'POST',
-    url: buildApiUri(endpoint),
-    json: true,
-    body: {
-      name: `[#${params.number}] ${params.title}`,
-      desc: params.description,
-      pos: 'bottom',
-      idList: listId,
-      urlSource: params.sourceUrl,
-      idMembers: params.memberIds,
-      idLabels: params.labelIds,
-    } as unknown as URLSearchParams,
   };
+  const query = {
+    name: `[#${params.number}] ${params.title}`,
+    desc: params.description,
+    pos: 'bottom',
+    idList: listId,
+    urlSource: params.sourceUrl,
+    idMembers: params.memberIds,
+    idLabels: params.labelIds,
+  } as unknown as URLSearchParams;
 
   const functionName = 'createCard()';
 
   if (debug) {
     console.log(
-      ` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(
-        options,
-        undefined,
-        2,
-      )}`,
+      ` ${functionName} calling ${buildApiUri(
+        endpoint,
+        query.toString(),
+      )} with options: ${JSON.stringify(options, undefined, 2)}`,
     );
   }
-  return fetch(buildApiUri(endpoint), options as RequestInit)
+  return fetch(buildApiUri(endpoint, query.toString()), options as RequestInit)
     .then((response) => {
       if (!response.ok) {
         console.trace(JSON.stringify(response, undefined, 2));
