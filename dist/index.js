@@ -29,7 +29,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.addAttachmentToCard = exports.getCardAttachments = exports.updateCard = exports.createCard = exports.getCardsOfList = exports.getListsOnBoard = exports.getMembersOfBoard = exports.getLabelsOfBoard = void 0;
+exports.addAttachmentToCard = exports.getCardAttachments = exports.updateCard = exports.createCard = exports.getCardsOfListOrBoard = exports.getListsOnBoard = exports.getMembersOfBoard = exports.getLabelsOfBoard = void 0;
 const core = __importStar(__nccwpck_require__(2669));
 const node_fetch_1 = __importDefault(__nccwpck_require__(8978));
 const utils_1 = __nccwpck_require__(254);
@@ -147,17 +147,18 @@ function getListsOnBoard() {
 }
 exports.getListsOnBoard = getListsOnBoard;
 /**
- * Get Cards in a List.
+ * Get Cards in a List / Board.
  *
  * https://developer.atlassian.com/cloud/trello/rest/api-group-lists/#api-lists-id-board-get
+ * https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-cards-get
  *
  * @param {*} listId
  * @returns
  */
-function getCardsOfList(listId) {
-    const endpoint = `/lists/${listId}/cards`;
+function getCardsOfListOrBoard(listId) {
+    const endpoint = listId ? `/lists/${listId}/cards` : `boards/${trelloBoard}/cards`;
     const options = Object.assign({}, apiBaseHeaders());
-    const functionName = 'getCardsOfList()';
+    const functionName = 'getCardsOfListOrBoard()';
     if (debug) {
         console.log(` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(options, undefined, 2)}`);
     }
@@ -173,7 +174,7 @@ function getCardsOfList(listId) {
     })
         .catch((error) => error);
 }
-exports.getCardsOfList = getCardsOfList;
+exports.getCardsOfListOrBoard = getCardsOfListOrBoard;
 /**
  * Create a new Card
  *
@@ -441,30 +442,15 @@ function pullRequestEventMoveCard() {
     const targetList = process.env.TRELLO_TARGET_LIST_ID;
     const syncMembers = process.env.TRELLO_SYNC_BOARD_MEMBERS;
     const additionalMemberIds = [];
-    if (!sourceList ||
+    if ((sourceList && !(0, utils_1.validateListExistsOnBoard)(sourceList)) ||
         !targetList ||
-        !(0, utils_1.validateListExistsOnBoard)(sourceList) ||
         !(0, utils_1.validateListExistsOnBoard)(targetList)) {
         core.setFailed('TRELLO_SOURCE_LIST_ID or TRELLO_TARGET_LIST_ID is invalid.');
         return;
     }
-    const getMembers = (0, api_1.getMembersOfBoard)().then((membersOfBoard) => {
-        if (typeof membersOfBoard === 'string') {
-            core.setFailed(membersOfBoard);
-            return;
-        }
-        const prReviewers = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers.map((reviewer) => reviewer.login);
-        const additionalMemberIds = [];
-        prReviewers.forEach((reviewer) => {
-            membersOfBoard.forEach((member) => {
-                if (member.username == reviewer) {
-                    console.log('Adding member ' + member.username + ' to the existing card (to be moved)');
-                    additionalMemberIds.push(member.id);
-                }
-            });
-        });
-    });
-    const cardsToBeMoved = (0, api_1.getCardsOfList)(sourceList).then((cardsOnList) => {
+    // TODO: Allow unspecified target as well so that - say - PR moves card to "Ready for review"
+    // list regardless of where it is currently.
+    const cardsToBeMoved = (0, api_1.getCardsOfListOrBoard)(sourceList).then((cardsOnList) => {
         var _a;
         if (typeof cardsOnList === 'string') {
             core.setFailed(cardsOnList);
@@ -473,8 +459,17 @@ function pullRequestEventMoveCard() {
         const referencedIssuesInGh = ((_a = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.body) === null || _a === void 0 ? void 0 : _a.match(/#[1-9][0-9]*/)) || [];
         return cardsOnList
             .filter((card) => {
+            const haystack = `${card.name} ${card.desc}`;
+            const issueRefsOnCurrentCard = haystack.match(/#[1-9][0-9]*/) || [];
+            if (debug) {
+                console.log('issueRefsOnCurrentCard', JSON.stringify(issueRefsOnCurrentCard, undefined, 2));
+            }
+            const crossMatchIssues = issueRefsOnCurrentCard.filter((issueRef) => referencedIssuesInGh.includes(issueRef));
+            return crossMatchIssues.length !== 0;
+        })
+            .filter((card) => {
             console.log(`filtering card ${card.name} attachments.`);
-            const cardAttachments = (0, api_1.getCardAttachments)(card.id).then((attachments) => {
+            return (0, api_1.getCardAttachments)(card.id).then((attachments) => {
                 if (typeof attachments === 'string') {
                     return false;
                 }
@@ -483,18 +478,9 @@ function pullRequestEventMoveCard() {
                     return attachment.url.startsWith(repoHtmlUrl);
                 });
             });
-        })
-            .filter((card) => {
-            const haystack = `${card.name} ${card.desc}`;
-            const issueRefsOnCurrentCard = haystack.match(/#[0-9][1-9]*/) || [];
-            if (debug) {
-                console.log('issueRefsOnCurrentCard', JSON.stringify(issueRefsOnCurrentCard, undefined, 2));
-            }
-            const crossMatchIssues = issueRefsOnCurrentCard.filter((issueRef) => referencedIssuesInGh.includes(issueRef));
-            return crossMatchIssues.length !== 0;
         });
     });
-    Promise.all([getMembers, cardsToBeMoved]).then((promiseValues) => {
+    Promise.all([cardsToBeMoved]).then((promiseValues) => {
         const params = {
             destinationListId: targetList,
             memberIds: additionalMemberIds.join(),
