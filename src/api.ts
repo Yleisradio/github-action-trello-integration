@@ -43,7 +43,7 @@ const buildApiUri = (endpoint: string, additionalReqeustParameters?: string): st
 const apiBaseHeaders = (): object => {
   return {
     Accept: 'application/json',
-    Method: 'GET',
+    method: 'GET',
   };
 };
 
@@ -198,7 +198,8 @@ function createCard(listId: string, params: TrelloCardRequestParams): Promise<Tr
     ...(apiBaseHeaders() as RequestInit),
     method: 'POST',
     url: buildApiUri(endpoint),
-    form: {
+    json: true,
+    body: {
       name: `[#${params.number}] ${params.title}`,
       desc: params.description,
       pos: 'bottom',
@@ -206,9 +207,9 @@ function createCard(listId: string, params: TrelloCardRequestParams): Promise<Tr
       urlSource: params.sourceUrl,
       idMembers: params.memberIds,
       idLabels: params.labelIds,
-    },
-    json: true,
+    } as unknown as URLSearchParams,
   };
+
   const functionName = 'createCard()';
 
   if (debug) {

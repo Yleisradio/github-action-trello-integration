@@ -59,7 +59,7 @@ const buildApiUri = (endpoint, additionalReqeustParameters) => `${apiBaseUrl}${e
 const apiBaseHeaders = () => {
     return {
         Accept: 'application/json',
-        Method: 'GET',
+        method: 'GET',
     };
 };
 /**
@@ -185,7 +185,7 @@ exports.getCardsOfList = getCardsOfList;
  */
 function createCard(listId, params) {
     const endpoint = `/cards`;
-    const options = Object.assign(Object.assign({}, apiBaseHeaders()), { method: 'POST', url: buildApiUri(endpoint), form: {
+    const options = Object.assign(Object.assign({}, apiBaseHeaders()), { method: 'POST', url: buildApiUri(endpoint), json: true, body: {
             name: `[#${params.number}] ${params.title}`,
             desc: params.description,
             pos: 'bottom',
@@ -193,7 +193,7 @@ function createCard(listId, params) {
             urlSource: params.sourceUrl,
             idMembers: params.memberIds,
             idLabels: params.labelIds,
-        }, json: true });
+        } });
     const functionName = 'createCard()';
     if (debug) {
         console.log(` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(options, undefined, 2)}`);
