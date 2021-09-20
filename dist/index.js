@@ -156,7 +156,7 @@ exports.getListsOnBoard = getListsOnBoard;
  * @returns
  */
 function getCardsOfListOrBoard(listId) {
-    const endpoint = listId ? `/lists/${listId}/cards` : `boards/${trelloBoard}/cards`;
+    const endpoint = listId ? `/lists/${listId}/cards` : `/boards/${trelloBoard}/cards`;
     const options = Object.assign({}, apiBaseHeaders());
     const functionName = 'getCardsOfListOrBoard()';
     if (debug) {
@@ -450,7 +450,8 @@ function pullRequestEventMoveCard() {
     }
     // TODO: Allow unspecified target as well so that - say - PR moves card to "Ready for review"
     // list regardless of where it is currently.
-    const cardsToBeMoved = (0, api_1.getCardsOfListOrBoard)(sourceList).then((cardsOnList) => {
+    const cardsToBeMoved = (0, api_1.getCardsOfListOrBoard)(sourceList)
+        .then((cardsOnList) => {
         var _a;
         if (typeof cardsOnList === 'string') {
             core.setFailed(cardsOnList);
@@ -477,15 +478,21 @@ function pullRequestEventMoveCard() {
                     console.log(`attachments url ${attachment.url}: ${attachment.url.startsWith(repoHtmlUrl) ? 'matches' : 'miss'}`);
                     return attachment.url.startsWith(repoHtmlUrl);
                 });
+                return attachments.length !== 0;
             });
         });
+    })
+        .catch((error) => {
+        console.error(error);
+        core.setFailed('Something went wrong when querying Cards to be moved.');
+        return [];
     });
     Promise.all([cardsToBeMoved]).then((promiseValues) => {
         const params = {
             destinationListId: targetList,
             memberIds: additionalMemberIds.join(),
         };
-        promiseValues[1].forEach((card) => {
+        promiseValues[0].forEach((card) => {
             (0, api_1.updateCard)(card.id, params).then((trelloCard) => {
                 if (typeof trelloCard === 'string') {
                     core.setFailed(trelloCard);

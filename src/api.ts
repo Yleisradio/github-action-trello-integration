@@ -157,7 +157,7 @@ function getListsOnBoard(): Promise<TrelloList[] | string> {
  * @returns
  */
 function getCardsOfListOrBoard(listId?: string): Promise<TrelloCard[] | string> {
-  const endpoint = listId ? `/lists/${listId}/cards` : `boards/${trelloBoard}/cards`;
+  const endpoint = listId ? `/lists/${listId}/cards` : `/boards/${trelloBoard}/cards`;
   const options: RequestInit = { ...(apiBaseHeaders() as RequestInit) };
   const functionName = 'getCardsOfListOrBoard()';
 

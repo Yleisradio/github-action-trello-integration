@@ -151,45 +151,52 @@ function pullRequestEventMoveCard() {
 
   // TODO: Allow unspecified target as well so that - say - PR moves card to "Ready for review"
   // list regardless of where it is currently.
-  const cardsToBeMoved = getCardsOfListOrBoard(sourceList).then((cardsOnList) => {
-    if (typeof cardsOnList === 'string') {
-      core.setFailed(cardsOnList);
-      return [];
-    }
-    const referencedIssuesInGh: string[] = pullRequest?.body?.match(/#[1-9][0-9]*/) || [];
+  const cardsToBeMoved = getCardsOfListOrBoard(sourceList)
+    .then((cardsOnList) => {
+      if (typeof cardsOnList === 'string') {
+        core.setFailed(cardsOnList);
+        return [];
+      }
+      const referencedIssuesInGh: string[] = pullRequest?.body?.match(/#[1-9][0-9]*/) || [];
 
-    return cardsOnList
-      .filter((card) => {
-        const haystack = `${card.name} ${card.desc}`;
-        const issueRefsOnCurrentCard = haystack.match(/#[1-9][0-9]*/) || [];
-        if (debug) {
-          console.log(
-            'issueRefsOnCurrentCard',
-            JSON.stringify(issueRefsOnCurrentCard, undefined, 2),
-          );
-        }
-        const crossMatchIssues = issueRefsOnCurrentCard.filter((issueRef) =>
-          referencedIssuesInGh.includes(issueRef),
-        );
-        return crossMatchIssues.length !== 0;
-      })
-      .filter((card) => {
-        console.log(`filtering card ${card.name} attachments.`);
-        return getCardAttachments(card.id).then((attachments) => {
-          if (typeof attachments === 'string') {
-            return false;
-          }
-          attachments.find((attachment) => {
+      return cardsOnList
+        .filter((card) => {
+          const haystack = `${card.name} ${card.desc}`;
+          const issueRefsOnCurrentCard = haystack.match(/#[1-9][0-9]*/) || [];
+          if (debug) {
             console.log(
-              `attachments url ${attachment.url}: ${
-                attachment.url.startsWith(repoHtmlUrl) ? 'matches' : 'miss'
-              }`,
+              'issueRefsOnCurrentCard',
+              JSON.stringify(issueRefsOnCurrentCard, undefined, 2),
             );
-            return attachment.url.startsWith(repoHtmlUrl);
+          }
+          const crossMatchIssues = issueRefsOnCurrentCard.filter((issueRef) =>
+            referencedIssuesInGh.includes(issueRef),
+          );
+          return crossMatchIssues.length !== 0;
+        })
+        .filter((card) => {
+          console.log(`filtering card ${card.name} attachments.`);
+          return getCardAttachments(card.id).then((attachments) => {
+            if (typeof attachments === 'string') {
+              return false;
+            }
+            attachments.find((attachment) => {
+              console.log(
+                `attachments url ${attachment.url}: ${
+                  attachment.url.startsWith(repoHtmlUrl) ? 'matches' : 'miss'
+                }`,
+              );
+              return attachment.url.startsWith(repoHtmlUrl);
+            });
+            return attachments.length !== 0;
           });
         });
-      });
-  });
+    })
+    .catch((error) => {
+      console.error(error);
+      core.setFailed('Something went wrong when querying Cards to be moved.');
+      return [];
+    });
 
   Promise.all([cardsToBeMoved]).then((promiseValues) => {
     const params = {
@@ -197,7 +204,7 @@ function pullRequestEventMoveCard() {
       memberIds: additionalMemberIds.join(),
     };
 
-    promiseValues[1].forEach((card) => {
+    promiseValues[0].forEach((card) => {
       updateCard(card.id, params).then((trelloCard) => {
         if (typeof trelloCard === 'string') {
           core.setFailed(trelloCard);
