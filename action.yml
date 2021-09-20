@@ -4,9 +4,6 @@ inputs:
   action:
     description: 'Desired action to do on a Card'
     required: true
-  verbose:
-    description: 'Controls verbosity of the logging. Use true for verbose, omit / empty string for suppressed logging.'
-    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'
