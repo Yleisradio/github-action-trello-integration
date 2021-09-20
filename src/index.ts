@@ -44,34 +44,12 @@ try {
 
 function issueOpenedCreateCard() {
   const issue = ghPayload.issue;
-  const issueEventName = github.context.eventName;
   const issueNumber = issue?.number;
   const issueTitle = issue?.title;
   const issueBody = issue?.body;
   const issueUrl = issue?.html_url;
   const issueAssigneeNicks = issue?.assignees.map((assignee: any) => assignee.login);
   const issueLabelNames = issue?.labels.map((label: any) => label.name);
-  const repoHtmlUrl = github.context.payload.repository?.html_url;
-
-  if (debug) {
-    console.log(
-      JSON.stringify(
-        {
-          function: 'issueOpenedCreateCard()',
-          issueEventName: issueEventName,
-          issueNumber: issueNumber,
-          issueTitle: issueTitle,
-          issueBody: issueBody,
-          issueUrl: issueUrl,
-          issueAssigneeNicks: issueAssigneeNicks,
-          issueLabelNames: issueLabelNames,
-          githubContext: github.context,
-        },
-        undefined,
-        2,
-      ),
-    );
-  }
   const listId: string = process.env.TRELLO_LIST_ID as string;
   const trelloLabelIds: string[] = [];
   const memberIds: string[] = [];
@@ -115,35 +93,21 @@ function issueOpenedCreateCard() {
 
     console.log(`Creating new card to ${listId} from issue  "[#${issueNumber}] ${issueTitle}"`);
 
+    // No need to create the attachment for this repository separately since the createCard()
+    // adds the backlink to the created issue, see
+    // params.sourceUrl property.
     createCard(listId, params).then((createdCard) => {
       if (typeof createdCard === 'string') {
         core.setFailed(createdCard);
         return;
       }
-      if (!repoHtmlUrl) {
-        core.setFailed(
-          `Resolving repository URL failed, no backlink set. Check card "${createdCard.name}", URL: ${createdCard.url}.`,
-        );
-        return;
-      }
+      console.log(`Card created: "[#${issueNumber}] ${issueTitle}"`);
 
       if (debug)
         console.log(
           `Card created: "${createdCard.name}"`,
           JSON.stringify(createdCard, undefined, 2),
         );
-
-      addAttachmentToCard(createdCard.id, repoHtmlUrl).then((createdAttachment) => {
-        if (typeof createdAttachment === 'string') {
-          core.setFailed(createdAttachment);
-        }
-        if (debug) {
-          console.log(
-            'Created new card attachment: ',
-            JSON.stringify(createdAttachment, undefined, 2),
-          );
-        }
-      });
     });
   });
 }
@@ -212,17 +176,37 @@ function pullRequestEventMoveCard() {
     }
     const referencedIssuesInGh: string[] = pullRequest?.body?.match(/#[1-9][0-9]*/) || [];
 
-    return cardsOnList.filter((card) => {
-      const haystack = `${card.name} ${card.desc}`;
-      const issueRefsOnCurrentCard = haystack.match(/#[0-9][1-9]*/) || [];
-      if (debug) {
-        console.log('issueRefsOnCurrentCard', JSON.stringify(issueRefsOnCurrentCard, undefined, 2));
-      }
-      const crossMatchIssues = issueRefsOnCurrentCard.filter((issueRef) =>
-        referencedIssuesInGh.includes(issueRef),
-      );
-      return crossMatchIssues.length !== 0;
-    });
+    return cardsOnList
+      .filter((card) => {
+        console.log(`filtering card ${card.name} attachments.`);
+        const cardAttachments = getCardAttachments(card.id).then((attachments) => {
+          if (typeof attachments === 'string') {
+            return false;
+          }
+          attachments.find((attachment) => {
+            console.log(
+              `attachments url ${attachment.url}: ${
+                attachment.url.startsWith(repoHtmlUrl) ? 'matches' : 'miss'
+              }`,
+            );
+            return attachment.url.startsWith(repoHtmlUrl);
+          });
+        });
+      })
+      .filter((card) => {
+        const haystack = `${card.name} ${card.desc}`;
+        const issueRefsOnCurrentCard = haystack.match(/#[0-9][1-9]*/) || [];
+        if (debug) {
+          console.log(
+            'issueRefsOnCurrentCard',
+            JSON.stringify(issueRefsOnCurrentCard, undefined, 2),
+          );
+        }
+        const crossMatchIssues = issueRefsOnCurrentCard.filter((issueRef) =>
+          referencedIssuesInGh.includes(issueRef),
+        );
+        return crossMatchIssues.length !== 0;
+      });
   });
 
   Promise.all([getMembers, cardsToBeMoved]).then((promiseValues) => {

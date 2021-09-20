@@ -364,29 +364,13 @@ catch (error) {
     core.setFailed(error);
 }
 function issueOpenedCreateCard() {
-    var _a;
     const issue = ghPayload.issue;
-    const issueEventName = github.context.eventName;
     const issueNumber = issue === null || issue === void 0 ? void 0 : issue.number;
     const issueTitle = issue === null || issue === void 0 ? void 0 : issue.title;
     const issueBody = issue === null || issue === void 0 ? void 0 : issue.body;
     const issueUrl = issue === null || issue === void 0 ? void 0 : issue.html_url;
     const issueAssigneeNicks = issue === null || issue === void 0 ? void 0 : issue.assignees.map((assignee) => assignee.login);
     const issueLabelNames = issue === null || issue === void 0 ? void 0 : issue.labels.map((label) => label.name);
-    const repoHtmlUrl = (_a = github.context.payload.repository) === null || _a === void 0 ? void 0 : _a.html_url;
-    if (debug) {
-        console.log(JSON.stringify({
-            function: 'issueOpenedCreateCard()',
-            issueEventName: issueEventName,
-            issueNumber: issueNumber,
-            issueTitle: issueTitle,
-            issueBody: issueBody,
-            issueUrl: issueUrl,
-            issueAssigneeNicks: issueAssigneeNicks,
-            issueLabelNames: issueLabelNames,
-            githubContext: github.context,
-        }, undefined, 2));
-    }
     const listId = process.env.TRELLO_LIST_ID;
     const trelloLabelIds = [];
     const memberIds = [];
@@ -422,25 +406,17 @@ function issueOpenedCreateCard() {
             labelIds: trelloLabelIds.join(),
         };
         console.log(`Creating new card to ${listId} from issue  "[#${issueNumber}] ${issueTitle}"`);
+        // No need to create the attachment for this repository separately since the createCard()
+        // adds the backlink to the created issue, see
+        // params.sourceUrl property.
         (0, api_1.createCard)(listId, params).then((createdCard) => {
             if (typeof createdCard === 'string') {
                 core.setFailed(createdCard);
                 return;
             }
-            if (!repoHtmlUrl) {
-                core.setFailed(`Resolving repository URL failed, no backlink set. Check card "${createdCard.name}", URL: ${createdCard.url}.`);
-                return;
-            }
+            console.log(`Card created: "[#${issueNumber}] ${issueTitle}"`);
             if (debug)
                 console.log(`Card created: "${createdCard.name}"`, JSON.stringify(createdCard, undefined, 2));
-            (0, api_1.addAttachmentToCard)(createdCard.id, repoHtmlUrl).then((createdAttachment) => {
-                if (typeof createdAttachment === 'string') {
-                    core.setFailed(createdAttachment);
-                }
-                if (debug) {
-                    console.log('Created new card attachment: ', JSON.stringify(createdAttachment, undefined, 2));
-                }
-            });
         });
     });
 }
@@ -495,7 +471,20 @@ function pullRequestEventMoveCard() {
             return [];
         }
         const referencedIssuesInGh = ((_a = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.body) === null || _a === void 0 ? void 0 : _a.match(/#[1-9][0-9]*/)) || [];
-        return cardsOnList.filter((card) => {
+        return cardsOnList
+            .filter((card) => {
+            console.log(`filtering card ${card.name} attachments.`);
+            const cardAttachments = (0, api_1.getCardAttachments)(card.id).then((attachments) => {
+                if (typeof attachments === 'string') {
+                    return false;
+                }
+                attachments.find((attachment) => {
+                    console.log(`attachments url ${attachment.url}: ${attachment.url.startsWith(repoHtmlUrl) ? 'matches' : 'miss'}`);
+                    return attachment.url.startsWith(repoHtmlUrl);
+                });
+            });
+        })
+            .filter((card) => {
             const haystack = `${card.name} ${card.desc}`;
             const issueRefsOnCurrentCard = haystack.match(/#[0-9][1-9]*/) || [];
             if (debug) {
