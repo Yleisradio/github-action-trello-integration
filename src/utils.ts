@@ -33,28 +33,17 @@ const validateListExistsOnBoard = (listId: string) => {
       core.setFailed(listsFromApi);
       return false;
     }
-    if (debug) {
-      console.log({ listsFromApi: listsFromApi });
-    }
     const matching = listsFromApi.filter((list) => list.id === listId);
     return matching.length > 0;
   });
 };
 
 const boardId = (): string => {
-  if (
-    process &&
-    process.env &&
-    process.env.TRELLO_BOARD_ID &&
-    validateIdPattern(process.env.TRELLO_BOARD_ID)
-  ) {
-    if (debug) {
-      console.log('TRELLO_BOARD_ID pattern is valid: ' + process.env.TRELLO_BOARD_ID);
-    }
-    return process.env.TRELLO_BOARD_ID;
+  if (!validateIdPattern(process.env.TRELLO_BOARD_ID || '')) {
+    console.log('TRELLO_BOARD_ID pattern does not match the pattern.');
+    return '';
   }
-  console.log('TRELLO_BOARD_ID pattern does not match the pattern.');
-  return '';
+  return process.env.TRELLO_BOARD_ID as string;
 };
 
 export { validateIdPattern, validateListExistsOnBoard, boardId };
