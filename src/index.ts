@@ -89,12 +89,20 @@ function issueOpenedCreateCard() {
   }
 
   const getLabels = getLabelsOfBoard().then((trelloLabels) => {
+    if (typeof trelloLabels === 'string') {
+      core.setFailed(trelloLabels);
+      return;
+    }
     const intersection = trelloLabels.filter((label) => issueLabelNames.includes(label.name));
     const matchingLabelIds = intersection.map((trelloLabel) => trelloLabel.id);
     trelloLabelIds.push(...matchingLabelIds);
   });
 
   const getMembers = getMembersOfBoard().then((trelloMembers) => {
+    if (typeof trelloMembers === 'string') {
+      core.setFailed(trelloMembers);
+      return;
+    }
     const membersOnBothSides = trelloMembers.filter((member) =>
       issueAssigneeNicks.includes(member.username),
     );
@@ -115,9 +123,8 @@ function issueOpenedCreateCard() {
     console.log(`Creating new card to ${listId} from issue  "[#${issueNumber}] ${issueTitle}"`);
 
     createCard(listId, params).then((createdCard) => {
-      if (createdCard === null) {
-        core.setFailed('Creating new card faiiled. Check the actioun logs.');
-        console.trace();
+      if (typeof createdCard === 'string') {
+        core.setFailed(createdCard);
         return;
       }
       if (!repoHtmlUrl) {
@@ -134,6 +141,9 @@ function issueOpenedCreateCard() {
         );
 
       addUrlSourceToCard(createdCard.id, repoHtmlUrl).then((createdAttachment) => {
+        if (typeof createdAttachment === 'string') {
+          core.setFailed(createdAttachment);
+        }
         if (debug) {
           console.log(
             'Created new card attachment: ',
@@ -184,23 +194,29 @@ function pullRequestEventMoveCard() {
   }
 
   const getMembers = getMembersOfBoard().then((membersOfBoard) => {
-    if (syncMembers) {
-      const prReviewers: string[] = pullRequest?.requested_reviewers.map(
-        (reviewer: any) => reviewer.login as string,
-      );
-      const additionalMemberIds: string[] = [];
-      prReviewers.forEach((reviewer) => {
-        membersOfBoard.forEach((member) => {
-          if (member.username == reviewer) {
-            console.log('Adding member ' + member.username + ' to the existing card (to be moved)');
-            additionalMemberIds.push(member.id);
-          }
-        });
-      });
+    if (typeof membersOfBoard === 'string') {
+      core.setFailed(membersOfBoard);
+      return;
     }
+    const prReviewers: string[] = pullRequest?.requested_reviewers.map(
+      (reviewer: any) => reviewer.login as string,
+    );
+    const additionalMemberIds: string[] = [];
+    prReviewers.forEach((reviewer) => {
+      membersOfBoard.forEach((member) => {
+        if (member.username == reviewer) {
+          console.log('Adding member ' + member.username + ' to the existing card (to be moved)');
+          additionalMemberIds.push(member.id);
+        }
+      });
+    });
   });
 
   const cardsToBeMoved = getCardsOfList(sourceList).then((cardsOnList) => {
+    if (typeof cardsOnList === 'string') {
+      core.setFailed(cardsOnList);
+      return [];
+    }
     const referencedIssuesInGh: string[] = pullRequest?.body?.match(/#[1-9][0-9]*/) || [];
 
     return cardsOnList.filter((card) => {
@@ -223,12 +239,22 @@ function pullRequestEventMoveCard() {
     };
 
     promiseValues[1].forEach((card) => {
-      updateCard(card.id, params).then((trelloCard: TrelloCard) => {
-        getCardAttachments(trelloCard.id).then((cardAttachments: TrelloAttachment[]) => {
-          console.log(
-            'getCardAttachments response: ',
-            JSON.stringify(cardAttachments, undefined, 2),
-          );
+      updateCard(card.id, params).then((trelloCard) => {
+        if (typeof trelloCard === 'string') {
+          core.setFailed(trelloCard);
+          return;
+        }
+        getCardAttachments(trelloCard.id).then((cardAttachments) => {
+          if (typeof cardAttachments === 'string') {
+            core.setFailed(cardAttachments);
+            return;
+          }
+          if (debug) {
+            console.log(
+              'getCardAttachments response: ',
+              JSON.stringify(cardAttachments, undefined, 2),
+            );
+          }
           // We wanna touch cards explicitly linked to the current repository.
           const cardsWithRepoReference = cardAttachments.filter((cardAttachment) =>
             cardAttachment.url.startsWith(repoHtmlUrl),

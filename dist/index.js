@@ -80,7 +80,7 @@ function getLabelsOfBoard() {
         .then((response) => {
         if (!response.ok) {
             console.trace(JSON.stringify(response, undefined, 2));
-            return [];
+            return `${response.status} ${response.text}`;
         }
         else {
             return response.json();
@@ -107,7 +107,7 @@ function getMembersOfBoard() {
         .then((response) => {
         if (!response.ok) {
             console.trace(JSON.stringify(response, undefined, 2));
-            return [];
+            return `${response.status} ${response.text}`;
         }
         else {
             return response.json();
@@ -139,7 +139,7 @@ function getListsOnBoard() {
         .then((response) => {
         if (!response.ok) {
             console.trace(JSON.stringify(response, undefined, 2));
-            return [];
+            return `${response.status} ${response.text}`;
         }
         return response.json();
     })
@@ -165,7 +165,7 @@ function getCardsOfList(listId) {
         .then((response) => {
         if (!response.ok) {
             console.trace(JSON.stringify(response, undefined, 2));
-            return [];
+            return `${response.status} ${response.text}`;
         }
         else {
             return response.json();
@@ -186,7 +186,7 @@ exports.getCardsOfList = getCardsOfList;
 function createCard(listId, params) {
     const endpoint = `/cards`;
     const options = Object.assign(Object.assign({}, apiBaseHeaders()), { method: 'POST' });
-    const query = {
+    const requestParams = {
         name: `[#${params.number}] ${params.title}`,
         desc: params.description,
         pos: 'bottom',
@@ -197,13 +197,13 @@ function createCard(listId, params) {
     };
     const functionName = 'createCard()';
     if (debug) {
-        console.log(` ${functionName} calling ${buildApiUri(endpoint, query.toString())} with options: ${JSON.stringify(options, undefined, 2)}`);
+        console.log(` ${functionName} calling ${buildApiUri(endpoint, requestParams.toString())} with requestParams: ${JSON.stringify(requestParams.toString(), undefined, 2)}`);
     }
-    return (0, node_fetch_1.default)(buildApiUri(endpoint, query.toString()), options)
+    return (0, node_fetch_1.default)(buildApiUri(endpoint, requestParams.toString()), options)
         .then((response) => {
         if (!response.ok) {
             console.trace(JSON.stringify(response, undefined, 2));
-            return null;
+            return `${response.status} ${response.text}`;
         }
         else {
             return response.json();
@@ -235,7 +235,7 @@ function updateCard(cardId, params) {
         .then((response) => {
         if (!response.ok) {
             console.trace(JSON.stringify(response, undefined, 2));
-            return [];
+            return `${response.status} ${response.text}`;
         }
         else {
             return response.json();
@@ -263,7 +263,7 @@ function getCardAttachments(cardId) {
         .then((response) => {
         if (!response.ok) {
             console.trace(JSON.stringify(response, undefined, 2));
-            return [];
+            return `${response.status} ${response.text}`;
         }
         else {
             return response.json();
@@ -296,7 +296,7 @@ function addUrlSourceToCard(cardId, url) {
         .then((response) => {
         if (!response.ok) {
             console.trace(JSON.stringify(response, undefined, 2));
-            return null;
+            return `${response.status} ${response.text}`;
         }
         else {
             return response.json();
@@ -401,11 +401,19 @@ function issueOpenedCreateCard() {
         return;
     }
     const getLabels = (0, api_1.getLabelsOfBoard)().then((trelloLabels) => {
+        if (typeof trelloLabels === 'string') {
+            core.setFailed(trelloLabels);
+            return;
+        }
         const intersection = trelloLabels.filter((label) => issueLabelNames.includes(label.name));
         const matchingLabelIds = intersection.map((trelloLabel) => trelloLabel.id);
         trelloLabelIds.push(...matchingLabelIds);
     });
     const getMembers = (0, api_1.getMembersOfBoard)().then((trelloMembers) => {
+        if (typeof trelloMembers === 'string') {
+            core.setFailed(trelloMembers);
+            return;
+        }
         const membersOnBothSides = trelloMembers.filter((member) => issueAssigneeNicks.includes(member.username));
         const matchingMemberIds = membersOnBothSides.map((trelloMember) => trelloMember.id);
         memberIds.push(...matchingMemberIds);
@@ -421,9 +429,8 @@ function issueOpenedCreateCard() {
         };
         console.log(`Creating new card to ${listId} from issue  "[#${issueNumber}] ${issueTitle}"`);
         (0, api_1.createCard)(listId, params).then((createdCard) => {
-            if (createdCard === null) {
-                core.setFailed('Creating new card faiiled. Check the actioun logs.');
-                console.trace();
+            if (typeof createdCard === 'string') {
+                core.setFailed(createdCard);
                 return;
             }
             if (!repoHtmlUrl) {
@@ -433,6 +440,9 @@ function issueOpenedCreateCard() {
             if (debug)
                 console.log(`Card created: "${createdCard.name}"`, JSON.stringify(createdCard, undefined, 2));
             (0, api_1.addUrlSourceToCard)(createdCard.id, repoHtmlUrl).then((createdAttachment) => {
+                if (typeof createdAttachment === 'string') {
+                    core.setFailed(createdAttachment);
+                }
                 if (debug) {
                     console.log('Created new card attachment: ', JSON.stringify(createdAttachment, undefined, 2));
                 }
@@ -469,21 +479,27 @@ function pullRequestEventMoveCard() {
         return;
     }
     const getMembers = (0, api_1.getMembersOfBoard)().then((membersOfBoard) => {
-        if (syncMembers) {
-            const prReviewers = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers.map((reviewer) => reviewer.login);
-            const additionalMemberIds = [];
-            prReviewers.forEach((reviewer) => {
-                membersOfBoard.forEach((member) => {
-                    if (member.username == reviewer) {
-                        console.log('Adding member ' + member.username + ' to the existing card (to be moved)');
-                        additionalMemberIds.push(member.id);
-                    }
-                });
-            });
+        if (typeof membersOfBoard === 'string') {
+            core.setFailed(membersOfBoard);
+            return;
         }
+        const prReviewers = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers.map((reviewer) => reviewer.login);
+        const additionalMemberIds = [];
+        prReviewers.forEach((reviewer) => {
+            membersOfBoard.forEach((member) => {
+                if (member.username == reviewer) {
+                    console.log('Adding member ' + member.username + ' to the existing card (to be moved)');
+                    additionalMemberIds.push(member.id);
+                }
+            });
+        });
     });
     const cardsToBeMoved = (0, api_1.getCardsOfList)(sourceList).then((cardsOnList) => {
         var _a;
+        if (typeof cardsOnList === 'string') {
+            core.setFailed(cardsOnList);
+            return [];
+        }
         const referencedIssuesInGh = ((_a = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.body) === null || _a === void 0 ? void 0 : _a.match(/#[1-9][0-9]*/)) || [];
         return cardsOnList.filter((card) => {
             const haystack = `${card.name} ${card.desc}`;
@@ -502,8 +518,18 @@ function pullRequestEventMoveCard() {
         };
         promiseValues[1].forEach((card) => {
             (0, api_1.updateCard)(card.id, params).then((trelloCard) => {
+                if (typeof trelloCard === 'string') {
+                    core.setFailed(trelloCard);
+                    return;
+                }
                 (0, api_1.getCardAttachments)(trelloCard.id).then((cardAttachments) => {
-                    console.log('getCardAttachments response: ', JSON.stringify(cardAttachments, undefined, 2));
+                    if (typeof cardAttachments === 'string') {
+                        core.setFailed(cardAttachments);
+                        return;
+                    }
+                    if (debug) {
+                        console.log('getCardAttachments response: ', JSON.stringify(cardAttachments, undefined, 2));
+                    }
                     // We wanna touch cards explicitly linked to the current repository.
                     const cardsWithRepoReference = cardAttachments.filter((cardAttachment) => cardAttachment.url.startsWith(repoHtmlUrl));
                 });
@@ -571,6 +597,10 @@ const validateListExistsOnBoard = (listId) => {
         return false;
     }
     return (0, api_1.getListsOnBoard)().then((listsFromApi) => {
+        if (typeof listsFromApi === 'string') {
+            core.setFailed(listsFromApi);
+            return false;
+        }
         if (debug) {
             console.log({ listsFromApi: listsFromApi });
         }

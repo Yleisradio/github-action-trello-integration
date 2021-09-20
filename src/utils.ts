@@ -29,6 +29,10 @@ const validateListExistsOnBoard = (listId: string) => {
     return false;
   }
   return getListsOnBoard().then((listsFromApi) => {
+    if (typeof listsFromApi === 'string') {
+      core.setFailed(listsFromApi);
+      return false;
+    }
     if (debug) {
       console.log({ listsFromApi: listsFromApi });
     }
