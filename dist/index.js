@@ -6,40 +6,19 @@
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.addAttachmentToCard = exports.getCardAttachments = exports.updateCard = exports.createCard = exports.getCardsOfListOrBoard = exports.getListsOnBoard = exports.getMembersOfBoard = exports.getLabelsOfBoard = void 0;
-const core = __importStar(__nccwpck_require__(2669));
 const node_fetch_1 = __importDefault(__nccwpck_require__(8978));
 const utils_1 = __nccwpck_require__(254);
 const apiBaseUrl = 'https://api.trello.com/1';
-const debug = core.getInput('verbose');
 const trelloBoard = (0, utils_1.boardId)();
 const apiKey = process.env.TRELLO_API_KEY || '';
 const apiToken = process.env.TRELLO_API_TOKEN || '';
-if (!apiKey || !apiToken) {
-    throw Error('Trello API key and/or token is missing.');
+if (!apiKey || !apiToken || !trelloBoard) {
+    throw Error('Trello API key and/or token or Board ID is missing.');
 }
 /**
  * Build API URI.
@@ -72,14 +51,10 @@ const apiBaseHeaders = () => {
 function getLabelsOfBoard() {
     const endpoint = `/boards/${trelloBoard}/labels`;
     const options = Object.assign({}, apiBaseHeaders());
-    const functionName = 'getLabelsOfBoard()';
-    if (debug) {
-        console.log(` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(options, undefined, 2)}`);
-    }
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
         .then((response) => {
         if (!response.ok) {
-            console.trace(JSON.stringify(response, undefined, 2));
+            console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
             return `${response.status} ${response.text}`;
         }
         else {
@@ -99,14 +74,10 @@ exports.getLabelsOfBoard = getLabelsOfBoard;
 function getMembersOfBoard() {
     const endpoint = `/boards/${trelloBoard}/members`;
     const options = Object.assign({}, apiBaseHeaders());
-    const functionName = 'getMembersOfBoard()';
-    if (debug) {
-        console.log(` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(options, undefined, 2)}`);
-    }
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
         .then((response) => {
         if (!response.ok) {
-            console.trace(JSON.stringify(response, undefined, 2));
+            console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
             return `${response.status} ${response.text}`;
         }
         else {
@@ -128,17 +99,10 @@ function getListsOnBoard() {
     const endpoint = `/boards/${trelloBoard}/lists`;
     const endpointArgs = 'filter=open';
     const options = Object.assign({}, apiBaseHeaders());
-    const functionName = 'getListsOnBoard()';
-    if (debug) {
-        console.log(`${functionName} kicked off`);
-    }
-    if (debug) {
-        console.log(` ${functionName} calling ${buildApiUri(endpoint, endpointArgs)} with options: ${JSON.stringify(options, undefined, 2)}`);
-    }
     return (0, node_fetch_1.default)(buildApiUri(endpoint, endpointArgs), options)
         .then((response) => {
         if (!response.ok) {
-            console.trace(JSON.stringify(response, undefined, 2));
+            console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
             return `${response.status} ${response.text}`;
         }
         return response.json();
@@ -158,14 +122,10 @@ exports.getListsOnBoard = getListsOnBoard;
 function getCardsOfListOrBoard(listId) {
     const endpoint = listId ? `/lists/${listId}/cards` : `/boards/${trelloBoard}/cards`;
     const options = Object.assign({}, apiBaseHeaders());
-    const functionName = 'getCardsOfListOrBoard()';
-    if (debug) {
-        console.log(` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(options, undefined, 2)}`);
-    }
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
         .then((response) => {
         if (!response.ok) {
-            console.trace(JSON.stringify(response, undefined, 2));
+            console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
             return `${response.status} ${response.text}`;
         }
         else {
@@ -198,13 +158,10 @@ function createCard(listId, params) {
     cardData.append('idMembers', params.memberIds || '');
     cardData.append('idLabels', params.labelIds || '');
     const functionName = 'createCard()';
-    if (debug) {
-        console.log(` ${functionName} calling ${buildApiUri(endpoint, cardData.toString())} with requestParams: ${JSON.stringify(cardData.toString(), undefined, 2)}`);
-    }
     return (0, node_fetch_1.default)(buildApiUri(endpoint, cardData.toString()), options)
         .then((response) => {
         if (!response.ok) {
-            console.trace(JSON.stringify(response, undefined, 2));
+            console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
             return `${response.status} ${response.text}`;
         }
         else {
@@ -230,13 +187,10 @@ function updateCard(cardId, params) {
             idMembers: params.memberIds,
         } });
     const functionName = 'updateCard()';
-    if (debug) {
-        console.log(` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(options, undefined, 2)}`);
-    }
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
         .then((response) => {
         if (!response.ok) {
-            console.trace(JSON.stringify(response, undefined, 2));
+            console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
             return `${response.status} ${response.text}`;
         }
         else {
@@ -257,14 +211,10 @@ exports.updateCard = updateCard;
 function getCardAttachments(cardId) {
     const endpoint = `/cards/${cardId}/attachments`;
     const options = Object.assign({}, apiBaseHeaders());
-    const functionName = 'getCardAttachments()';
-    if (debug) {
-        console.log(` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(options, undefined, 2)}`);
-    }
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
         .then((response) => {
         if (!response.ok) {
-            console.trace(JSON.stringify(response, undefined, 2));
+            console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
             return `${response.status} ${response.text}`;
         }
         else {
@@ -288,14 +238,10 @@ function addAttachmentToCard(cardId, url) {
     const options = Object.assign(Object.assign({}, apiBaseHeaders()), { method: 'POST' });
     const queryParams = new URLSearchParams();
     queryParams.append('url', url);
-    const functionName = 'addUrlSourceToCard()';
-    if (debug) {
-        console.log(` ${functionName} calling ${buildApiUri(endpoint, queryParams.toString())} with queryParams: ${queryParams.toString()}`);
-    }
     return (0, node_fetch_1.default)(buildApiUri(endpoint, queryParams.toString()), options)
         .then((response) => {
         if (!response.ok) {
-            console.trace(JSON.stringify(response, undefined, 2));
+            console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
             return `${response.status} ${response.text}`;
         }
         else {
@@ -406,7 +352,9 @@ function issueOpenedCreateCard() {
             memberIds: memberIds.join(),
             labelIds: trelloLabelIds.join(),
         };
-        console.log(`Creating new card to ${listId} from issue  "[#${issueNumber}] ${issueTitle}"`);
+        if (debug) {
+            console.log(`Creating new card to ${listId} from issue  "[#${issueNumber}] ${issueTitle}"`);
+        }
         // No need to create the attachment for this repository separately since the createCard()
         // adds the backlink to the created issue, see
         // params.sourceUrl property.
@@ -415,31 +363,18 @@ function issueOpenedCreateCard() {
                 core.setFailed(createdCard);
                 return;
             }
-            console.log(`Card created: "[#${issueNumber}] ${issueTitle}"`);
-            if (debug)
-                console.log(`Card created: "${createdCard.name}"`, JSON.stringify(createdCard, undefined, 2));
+            if (debug) {
+                console.log(`Card created: "[#${issueNumber}] ${issueTitle}], url ${createdCard.shortUrl}"`);
+            }
         });
     });
 }
 function pullRequestEventMoveCard() {
     var _a;
-    const eventName = github.context.eventName;
     const pullRequest = ghPayload.pull_request;
     const repoHtmlUrl = ((_a = github.context.payload.repository) === null || _a === void 0 ? void 0 : _a.html_url) || 'URL missing in GH payload';
-    if (debug) {
-        console.log(JSON.stringify({
-            prNumber: pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.number,
-            issueEventName: eventName,
-            prTitle: pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.title,
-            prBody: pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.body,
-            prUrl: pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.html_url,
-            prAssignees: JSON.stringify(pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.assignees, undefined, 2),
-            prLabelNames: JSON.stringify(pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.labels, undefined, 2),
-        }, undefined, 2));
-    }
     const sourceList = process.env.TRELLO_SOURCE_LIST_ID;
     const targetList = process.env.TRELLO_TARGET_LIST_ID;
-    const syncMembers = process.env.TRELLO_SYNC_BOARD_MEMBERS;
     const additionalMemberIds = [];
     if ((sourceList && !(0, utils_1.validateListExistsOnBoard)(sourceList)) ||
         !targetList ||
@@ -449,69 +384,53 @@ function pullRequestEventMoveCard() {
     }
     // TODO: Allow unspecified target as well so that - say - PR moves card to "Ready for review"
     // list regardless of where it is currently.
-    const cardsToBeMoved = (0, api_1.getCardsOfListOrBoard)(sourceList)
+    (0, api_1.getCardsOfListOrBoard)(sourceList)
         .then((cardsOnList) => {
         var _a;
+        // Filter cards to those which refer to the Github Issues mentioned in the PR.
         if (typeof cardsOnList === 'string') {
             core.setFailed(cardsOnList);
             return [];
         }
         const referencedIssuesInGh = ((_a = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.body) === null || _a === void 0 ? void 0 : _a.match(/#[1-9][0-9]*/)) || [];
-        if (debug) {
-            console.log('referencedIssuesInGh', JSON.stringify(referencedIssuesInGh, undefined, 2));
-        }
         return cardsOnList
             .filter((card) => {
             const haystack = `${card.name} ${card.desc}`;
             const issueRefsOnCurrentCard = haystack.match(/#[1-9][0-9]*/) || [];
-            if (debug) {
-                console.log('issueRefsOnCurrentCard', JSON.stringify(issueRefsOnCurrentCard, undefined, 2));
-            }
             const crossMatchIssues = issueRefsOnCurrentCard.filter((issueRef) => referencedIssuesInGh.includes(issueRef));
             return crossMatchIssues.length !== 0;
         })
             .filter((card) => {
-            console.log(`filtering card ${card.name} attachments.`);
+            // Filter cards to those which refer to the Github repository via any attachment.
+            // Note that link in card.desc is not satisfactory.
             return (0, api_1.getCardAttachments)(card.id).then((attachments) => {
                 if (typeof attachments === 'string') {
                     return false;
                 }
-                attachments.find((attachment) => {
-                    console.log(`attachments url ${attachment.url}: ${attachment.url.startsWith(repoHtmlUrl) ? 'matches' : 'miss'}`);
-                    return attachment.url.startsWith(repoHtmlUrl);
-                });
+                attachments.find((attachment) => attachment.url.startsWith(repoHtmlUrl));
                 return attachments.length !== 0;
             });
         });
     })
-        .catch((error) => {
-        console.error(error);
-        core.setFailed('Something went wrong when querying Cards to be moved.');
-        return [];
-    });
-    Promise.all([cardsToBeMoved]).then((promiseValues) => {
+        // Final list of cards that need to be moved to target list.
+        .then((cardsToBeMoved) => {
         const params = {
             destinationListId: targetList,
             memberIds: additionalMemberIds.join(),
         };
-        promiseValues[0].forEach((card) => {
-            (0, api_1.updateCard)(card.id, params).then((trelloCard) => {
+        cardsToBeMoved.forEach((card) => {
+            (0, api_1.updateCard)(card.id, params)
+                .then((trelloCard) => {
                 if (typeof trelloCard === 'string') {
                     core.setFailed(trelloCard);
                     return;
                 }
-                (0, api_1.getCardAttachments)(trelloCard.id).then((cardAttachments) => {
-                    if (typeof cardAttachments === 'string') {
-                        core.setFailed(cardAttachments);
-                        return;
-                    }
-                    if (debug) {
-                        console.log('getCardAttachments response: ', JSON.stringify(cardAttachments, undefined, 2));
-                    }
-                    // We wanna touch cards explicitly linked to the current repository.
-                    const cardsWithRepoReference = cardAttachments.filter((cardAttachment) => cardAttachment.url.startsWith(repoHtmlUrl));
-                });
                 (0, api_1.addAttachmentToCard)(card.id, (pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.html_url) || '');
+            })
+                .catch((error) => {
+                console.error(error);
+                core.setFailed('Something went wrong when querying Cards to be moved.');
+                return [];
             });
         });
     });

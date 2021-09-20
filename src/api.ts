@@ -1,4 +1,3 @@
-import * as core from '@actions/core';
 import fetch, { Response } from 'node-fetch';
 import { boardId } from './utils';
 import { RequestInit } from 'node-fetch';
@@ -12,13 +11,13 @@ import {
 } from './types';
 
 const apiBaseUrl = 'https://api.trello.com/1';
-const debug = core.getInput('verbose');
 const trelloBoard = boardId();
 
 const apiKey: string = process.env.TRELLO_API_KEY || '';
 const apiToken: string = process.env.TRELLO_API_TOKEN || '';
-if (!apiKey || !apiToken) {
-  throw Error('Trello API key and/or token is missing.');
+
+if (!apiKey || !apiToken || !trelloBoard) {
+  throw Error('Trello API key and/or token or Board ID is missing.');
 }
 
 /**
@@ -55,21 +54,11 @@ const apiBaseHeaders = (): object => {
 function getLabelsOfBoard(): Promise<TrelloLabel[] | string> {
   const endpoint = `/boards/${trelloBoard}/labels`;
   const options: RequestInit = { ...(apiBaseHeaders() as RequestInit) };
-  const functionName = 'getLabelsOfBoard()';
 
-  if (debug) {
-    console.log(
-      ` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(
-        options,
-        undefined,
-        2,
-      )}`,
-    );
-  }
   return fetch(buildApiUri(endpoint), options)
     .then((response) => {
       if (!response.ok) {
-        console.trace(JSON.stringify(response, undefined, 2));
+        console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
         return `${response.status} ${response.text}`;
       } else {
         return response.json() as unknown as TrelloLabel[];
@@ -88,21 +77,11 @@ function getLabelsOfBoard(): Promise<TrelloLabel[] | string> {
 function getMembersOfBoard(): Promise<TrelloMember[] | string> {
   const endpoint = `/boards/${trelloBoard}/members`;
   const options: RequestInit = { ...(apiBaseHeaders() as RequestInit) };
-  const functionName = 'getMembersOfBoard()';
 
-  if (debug) {
-    console.log(
-      ` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(
-        options,
-        undefined,
-        2,
-      )}`,
-    );
-  }
   return fetch(buildApiUri(endpoint), options)
     .then((response) => {
       if (!response.ok) {
-        console.trace(JSON.stringify(response, undefined, 2));
+        console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
         return `${response.status} ${response.text}`;
       } else {
         return response.json() as unknown as TrelloLabel[];
@@ -123,23 +102,11 @@ function getListsOnBoard(): Promise<TrelloList[] | string> {
   const endpoint = `/boards/${trelloBoard}/lists`;
   const endpointArgs = 'filter=open';
   const options: RequestInit = { ...(apiBaseHeaders() as RequestInit) };
-  const functionName = 'getListsOnBoard()';
-  if (debug) {
-    console.log(`${functionName} kicked off`);
-  }
 
-  if (debug) {
-    console.log(
-      ` ${functionName} calling ${buildApiUri(
-        endpoint,
-        endpointArgs,
-      )} with options: ${JSON.stringify(options, undefined, 2)}`,
-    );
-  }
   return fetch(buildApiUri(endpoint, endpointArgs), options)
     .then((response: Response) => {
       if (!response.ok) {
-        console.trace(JSON.stringify(response, undefined, 2));
+        console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
         return `${response.status} ${response.text}`;
       }
       return response.json() as unknown as TrelloList[];
@@ -159,21 +126,11 @@ function getListsOnBoard(): Promise<TrelloList[] | string> {
 function getCardsOfListOrBoard(listId?: string): Promise<TrelloCard[] | string> {
   const endpoint = listId ? `/lists/${listId}/cards` : `/boards/${trelloBoard}/cards`;
   const options: RequestInit = { ...(apiBaseHeaders() as RequestInit) };
-  const functionName = 'getCardsOfListOrBoard()';
 
-  if (debug) {
-    console.log(
-      ` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(
-        options,
-        undefined,
-        2,
-      )}`,
-    );
-  }
   return fetch(buildApiUri(endpoint), options)
     .then((response) => {
       if (!response.ok) {
-        console.trace(JSON.stringify(response, undefined, 2));
+        console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
         return `${response.status} ${response.text}`;
       } else {
         return response.json() as unknown as TrelloLabel[];
@@ -210,18 +167,10 @@ function createCard(listId: string, params: TrelloCardRequestParams): Promise<Tr
 
   const functionName = 'createCard()';
 
-  if (debug) {
-    console.log(
-      ` ${functionName} calling ${buildApiUri(
-        endpoint,
-        cardData.toString(),
-      )} with requestParams: ${JSON.stringify(cardData.toString(), undefined, 2)}`,
-    );
-  }
   return fetch(buildApiUri(endpoint, cardData.toString()), options as RequestInit)
     .then((response) => {
       if (!response.ok) {
-        console.trace(JSON.stringify(response, undefined, 2));
+        console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
         return `${response.status} ${response.text}`;
       } else {
         return response.json() as unknown as TrelloLabel[];
@@ -250,19 +199,10 @@ function updateCard(cardId: string, params: TrelloCardRequestParams): Promise<Tr
   };
   const functionName = 'updateCard()';
 
-  if (debug) {
-    console.log(
-      ` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(
-        options,
-        undefined,
-        2,
-      )}`,
-    );
-  }
   return fetch(buildApiUri(endpoint), options as RequestInit)
     .then((response) => {
       if (!response.ok) {
-        console.trace(JSON.stringify(response, undefined, 2));
+        console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
         return `${response.status} ${response.text}`;
       } else {
         return response.json() as unknown as TrelloLabel[];
@@ -283,21 +223,10 @@ function getCardAttachments(cardId: string): Promise<TrelloAttachment[] | string
   const endpoint = `/cards/${cardId}/attachments`;
   const options = { ...apiBaseHeaders() };
 
-  const functionName = 'getCardAttachments()';
-
-  if (debug) {
-    console.log(
-      ` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(
-        options,
-        undefined,
-        2,
-      )}`,
-    );
-  }
   return fetch(buildApiUri(endpoint), options as RequestInit)
     .then((response) => {
       if (!response.ok) {
-        console.trace(JSON.stringify(response, undefined, 2));
+        console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
         return `${response.status} ${response.text}`;
       } else {
         return response.json() as unknown as TrelloLabel[];
@@ -323,20 +252,11 @@ function addAttachmentToCard(cardId: string, url: string): Promise<TrelloAttachm
   };
   const queryParams = new URLSearchParams();
   queryParams.append('url', url);
-  const functionName = 'addUrlSourceToCard()';
 
-  if (debug) {
-    console.log(
-      ` ${functionName} calling ${buildApiUri(
-        endpoint,
-        queryParams.toString(),
-      )} with queryParams: ${queryParams.toString()}`,
-    );
-  }
   return fetch(buildApiUri(endpoint, queryParams.toString()), options as RequestInit)
     .then((response) => {
       if (!response.ok) {
-        console.trace(JSON.stringify(response, undefined, 2));
+        console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
         return `${response.status} ${response.text}`;
       } else {
         return response.json() as unknown as TrelloAttachment[];

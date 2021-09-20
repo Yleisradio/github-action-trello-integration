@@ -15,6 +15,7 @@ import { validateListExistsOnBoard } from './utils';
 
 const debug = core.getInput('verbose');
 const action = core.getInput('action');
+
 /**
  * GW webhook payload.
  *
@@ -91,8 +92,9 @@ function issueOpenedCreateCard() {
       labelIds: trelloLabelIds.join(),
     } as unknown as TrelloCardRequestParams;
 
-    console.log(`Creating new card to ${listId} from issue  "[#${issueNumber}] ${issueTitle}"`);
-
+    if (debug) {
+      console.log(`Creating new card to ${listId} from issue  "[#${issueNumber}] ${issueTitle}"`);
+    }
     // No need to create the attachment for this repository separately since the createCard()
     // adds the backlink to the created issue, see
     // params.sourceUrl property.
@@ -101,42 +103,22 @@ function issueOpenedCreateCard() {
         core.setFailed(createdCard);
         return;
       }
-      console.log(`Card created: "[#${issueNumber}] ${issueTitle}"`);
 
-      if (debug)
+      if (debug) {
         console.log(
-          `Card created: "${createdCard.name}"`,
-          JSON.stringify(createdCard, undefined, 2),
+          `Card created: "[#${issueNumber}] ${issueTitle}], url ${createdCard.shortUrl}"`,
         );
+      }
     });
   });
 }
 
 function pullRequestEventMoveCard() {
-  const eventName: string = github.context.eventName;
   const pullRequest = ghPayload.pull_request;
   const repoHtmlUrl = github.context.payload.repository?.html_url || 'URL missing in GH payload';
 
-  if (debug) {
-    console.log(
-      JSON.stringify(
-        {
-          prNumber: pullRequest?.number,
-          issueEventName: eventName,
-          prTitle: pullRequest?.title,
-          prBody: pullRequest?.body,
-          prUrl: pullRequest?.html_url,
-          prAssignees: JSON.stringify(pullRequest?.assignees, undefined, 2),
-          prLabelNames: JSON.stringify(pullRequest?.labels, undefined, 2),
-        },
-        undefined,
-        2,
-      ),
-    );
-  }
   const sourceList: string = process.env.TRELLO_SOURCE_LIST_ID as string;
   const targetList: string = process.env.TRELLO_TARGET_LIST_ID as string;
-  const syncMembers: string = process.env.TRELLO_SYNC_BOARD_MEMBERS as string;
   const additionalMemberIds: string[] = [];
 
   if (
@@ -150,86 +132,58 @@ function pullRequestEventMoveCard() {
 
   // TODO: Allow unspecified target as well so that - say - PR moves card to "Ready for review"
   // list regardless of where it is currently.
-  const cardsToBeMoved = getCardsOfListOrBoard(sourceList)
+  getCardsOfListOrBoard(sourceList)
     .then((cardsOnList) => {
+      // Filter cards to those which refer to the Github Issues mentioned in the PR.
       if (typeof cardsOnList === 'string') {
         core.setFailed(cardsOnList);
         return [];
       }
       const referencedIssuesInGh: string[] = pullRequest?.body?.match(/#[1-9][0-9]*/) || [];
-      if (debug) {
-        console.log('referencedIssuesInGh', JSON.stringify(referencedIssuesInGh, undefined, 2));
-      }
 
       return cardsOnList
         .filter((card) => {
           const haystack = `${card.name} ${card.desc}`;
           const issueRefsOnCurrentCard = haystack.match(/#[1-9][0-9]*/) || [];
-          if (debug) {
-            console.log(
-              'issueRefsOnCurrentCard',
-              JSON.stringify(issueRefsOnCurrentCard, undefined, 2),
-            );
-          }
+
           const crossMatchIssues = issueRefsOnCurrentCard.filter((issueRef) =>
             referencedIssuesInGh.includes(issueRef),
           );
           return crossMatchIssues.length !== 0;
         })
         .filter((card) => {
-          console.log(`filtering card ${card.name} attachments.`);
+          // Filter cards to those which refer to the Github repository via any attachment.
+          // Note that link in card.desc is not satisfactory.
           return getCardAttachments(card.id).then((attachments) => {
             if (typeof attachments === 'string') {
               return false;
             }
-            attachments.find((attachment) => {
-              console.log(
-                `attachments url ${attachment.url}: ${
-                  attachment.url.startsWith(repoHtmlUrl) ? 'matches' : 'miss'
-                }`,
-              );
-              return attachment.url.startsWith(repoHtmlUrl);
-            });
+
+            attachments.find((attachment) => attachment.url.startsWith(repoHtmlUrl));
             return attachments.length !== 0;
           });
         });
     })
-    .catch((error) => {
-      console.error(error);
-      core.setFailed('Something went wrong when querying Cards to be moved.');
-      return [];
-    });
-
-  Promise.all([cardsToBeMoved]).then((promiseValues) => {
-    const params = {
-      destinationListId: targetList,
-      memberIds: additionalMemberIds.join(),
-    };
-
-    promiseValues[0].forEach((card) => {
-      updateCard(card.id, params).then((trelloCard) => {
-        if (typeof trelloCard === 'string') {
-          core.setFailed(trelloCard);
-          return;
-        }
-        getCardAttachments(trelloCard.id).then((cardAttachments) => {
-          if (typeof cardAttachments === 'string') {
-            core.setFailed(cardAttachments);
-            return;
-          }
-          if (debug) {
-            console.log(
-              'getCardAttachments response: ',
-              JSON.stringify(cardAttachments, undefined, 2),
-            );
-          }
-          // We wanna touch cards explicitly linked to the current repository.
-          const cardsWithRepoReference = cardAttachments.filter((cardAttachment) =>
-            cardAttachment.url.startsWith(repoHtmlUrl),
-          );
-        });
-        addAttachmentToCard(card.id, pullRequest?.html_url || '');
+    // Final list of cards that need to be moved to target list.
+    .then((cardsToBeMoved) => {
+      const params = {
+        destinationListId: targetList,
+        memberIds: additionalMemberIds.join(),
+      };
+      cardsToBeMoved.forEach((card) => {
+        updateCard(card.id, params)
+          .then((trelloCard) => {
+            if (typeof trelloCard === 'string') {
+              core.setFailed(trelloCard);
+              return;
+            }
+            addAttachmentToCard(card.id, pullRequest?.html_url || '');
+          })
+          .catch((error) => {
+            console.error(error);
+            core.setFailed('Something went wrong when querying Cards to be moved.');
+            return [];
+          });
       });
     });
-  });
 }
