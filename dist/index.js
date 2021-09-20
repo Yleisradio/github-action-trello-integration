@@ -570,29 +570,17 @@ const validateListExistsOnBoard = (listId) => {
             core.setFailed(listsFromApi);
             return false;
         }
-        if (debug) {
-            console.log({ listsFromApi: listsFromApi });
-        }
         const matching = listsFromApi.filter((list) => list.id === listId);
-        if (debug) {
-            console.log({ matching: matching });
-        }
-        return matching.length === 0;
+        return matching.length > 0;
     });
 };
 exports.validateListExistsOnBoard = validateListExistsOnBoard;
 const boardId = () => {
-    if (process &&
-        process.env &&
-        process.env.TRELLO_BOARD_ID &&
-        validateIdPattern(process.env.TRELLO_BOARD_ID)) {
-        if (debug) {
-            console.log('TRELLO_BOARD_ID pattern is valid: ' + process.env.TRELLO_BOARD_ID);
-        }
-        return process.env.TRELLO_BOARD_ID;
+    if (!validateIdPattern(process.env.TRELLO_BOARD_ID || '')) {
+        console.log('TRELLO_BOARD_ID pattern does not match the pattern.');
+        return '';
     }
-    console.log('TRELLO_BOARD_ID pattern does not match the pattern.');
-    return '';
+    return process.env.TRELLO_BOARD_ID;
 };
 exports.boardId = boardId;
 //# sourceMappingURL=utils.js.map
