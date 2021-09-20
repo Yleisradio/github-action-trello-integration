@@ -1,6 +1,5 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { create } from 'domain';
 
 import {
   getLabelsOfBoard,
@@ -9,10 +8,9 @@ import {
   createCard,
   updateCard,
   getCardAttachments,
-  addUrlSourceToCard,
+  addAttachmentToCard,
 } from './api';
-import { TrelloAttachment, TrelloCard, TrelloCardRequestParams } from './types';
-
+import { TrelloCardRequestParams } from './types';
 import { validateListExistsOnBoard } from './utils';
 
 const debug = core.getInput('verbose');
@@ -28,11 +26,6 @@ if (!action) {
   throw Error('Action is not set.');
 }
 
-if (debug) {
-  console.log(`Selected action (input from workflow) is ${action}`);
-  console.log({ github: JSON.stringify(github) });
-  // console.log({ github: JSON.stringify(github, undefined, 2) });
-}
 try {
   switch (action) {
     case 'issue_opened_create_card':
@@ -140,7 +133,7 @@ function issueOpenedCreateCard() {
           JSON.stringify(createdCard, undefined, 2),
         );
 
-      addUrlSourceToCard(createdCard.id, repoHtmlUrl).then((createdAttachment) => {
+      addAttachmentToCard(createdCard.id, repoHtmlUrl).then((createdAttachment) => {
         if (typeof createdAttachment === 'string') {
           core.setFailed(createdAttachment);
         }
@@ -260,7 +253,7 @@ function pullRequestEventMoveCard() {
             cardAttachment.url.startsWith(repoHtmlUrl),
           );
         });
-        addUrlSourceToCard(card.id, pullRequest?.html_url || '');
+        addAttachmentToCard(card.id, pullRequest?.html_url || '');
       });
     });
   });

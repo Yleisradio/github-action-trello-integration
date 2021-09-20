@@ -315,30 +315,25 @@ function getCardAttachments(cardId: string): Promise<TrelloAttachment[] | string
  * @param {*} url
  * @returns
  */
-function addUrlSourceToCard(cardId: string, url: string): Promise<TrelloAttachment | string> {
+function addAttachmentToCard(cardId: string, url: string): Promise<TrelloAttachment | string> {
   const endpoint = `/cards/${cardId}/attachments`;
   const options = {
     ...apiBaseHeaders(),
     method: 'POST',
-    headers: {
-      Accept: 'application/json',
-    },
-    form: {
-      url: url,
-    },
   };
+  const queryParams = new URLSearchParams();
+  queryParams.append('url', url);
   const functionName = 'addUrlSourceToCard()';
 
   if (debug) {
     console.log(
-      ` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(
-        options,
-        undefined,
-        2,
-      )}`,
+      ` ${functionName} calling ${buildApiUri(
+        endpoint,
+        queryParams.toString(),
+      )} with queryParams: ${queryParams.toString()}`,
     );
   }
-  return fetch(buildApiUri(endpoint), options as RequestInit)
+  return fetch(buildApiUri(endpoint, queryParams.toString()), options as RequestInit)
     .then((response) => {
       if (!response.ok) {
         console.trace(JSON.stringify(response, undefined, 2));
@@ -358,5 +353,5 @@ export {
   createCard,
   updateCard,
   getCardAttachments,
-  addUrlSourceToCard,
+  addAttachmentToCard,
 };

@@ -29,7 +29,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.addUrlSourceToCard = exports.getCardAttachments = exports.updateCard = exports.createCard = exports.getCardsOfList = exports.getListsOnBoard = exports.getMembersOfBoard = exports.getLabelsOfBoard = void 0;
+exports.addAttachmentToCard = exports.getCardAttachments = exports.updateCard = exports.createCard = exports.getCardsOfList = exports.getListsOnBoard = exports.getMembersOfBoard = exports.getLabelsOfBoard = void 0;
 const core = __importStar(__nccwpck_require__(2669));
 const node_fetch_1 = __importDefault(__nccwpck_require__(8978));
 const utils_1 = __nccwpck_require__(254);
@@ -282,18 +282,16 @@ exports.getCardAttachments = getCardAttachments;
  * @param {*} url
  * @returns
  */
-function addUrlSourceToCard(cardId, url) {
+function addAttachmentToCard(cardId, url) {
     const endpoint = `/cards/${cardId}/attachments`;
-    const options = Object.assign(Object.assign({}, apiBaseHeaders()), { method: 'POST', headers: {
-            Accept: 'application/json',
-        }, form: {
-            url: url,
-        } });
+    const options = Object.assign(Object.assign({}, apiBaseHeaders()), { method: 'POST' });
+    const queryParams = new URLSearchParams();
+    queryParams.append('url', url);
     const functionName = 'addUrlSourceToCard()';
     if (debug) {
-        console.log(` ${functionName} calling ${buildApiUri(endpoint)} with options: ${JSON.stringify(options, undefined, 2)}`);
+        console.log(` ${functionName} calling ${buildApiUri(endpoint, queryParams.toString())} with queryParams: ${queryParams.toString()}`);
     }
-    return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
+    return (0, node_fetch_1.default)(buildApiUri(endpoint, queryParams.toString()), options)
         .then((response) => {
         if (!response.ok) {
             console.trace(JSON.stringify(response, undefined, 2));
@@ -305,7 +303,7 @@ function addUrlSourceToCard(cardId, url) {
     })
         .catch((error) => error);
 }
-exports.addUrlSourceToCard = addUrlSourceToCard;
+exports.addAttachmentToCard = addAttachmentToCard;
 //# sourceMappingURL=api.js.map
 
 /***/ }),
@@ -349,11 +347,6 @@ const action = core.getInput('action');
 const ghPayload = github.context.payload;
 if (!action) {
     throw Error('Action is not set.');
-}
-if (debug) {
-    console.log(`Selected action (input from workflow) is ${action}`);
-    console.log({ github: JSON.stringify(github) });
-    // console.log({ github: JSON.stringify(github, undefined, 2) });
 }
 try {
     switch (action) {
@@ -440,7 +433,7 @@ function issueOpenedCreateCard() {
             }
             if (debug)
                 console.log(`Card created: "${createdCard.name}"`, JSON.stringify(createdCard, undefined, 2));
-            (0, api_1.addUrlSourceToCard)(createdCard.id, repoHtmlUrl).then((createdAttachment) => {
+            (0, api_1.addAttachmentToCard)(createdCard.id, repoHtmlUrl).then((createdAttachment) => {
                 if (typeof createdAttachment === 'string') {
                     core.setFailed(createdAttachment);
                 }
@@ -534,7 +527,7 @@ function pullRequestEventMoveCard() {
                     // We wanna touch cards explicitly linked to the current repository.
                     const cardsWithRepoReference = cardAttachments.filter((cardAttachment) => cardAttachment.url.startsWith(repoHtmlUrl));
                 });
-                (0, api_1.addUrlSourceToCard)(card.id, (pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.html_url) || '');
+                (0, api_1.addAttachmentToCard)(card.id, (pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.html_url) || '');
             });
         });
     });
