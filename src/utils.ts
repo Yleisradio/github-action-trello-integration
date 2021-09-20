@@ -37,10 +37,7 @@ const validateListExistsOnBoard = (listId: string) => {
       console.log({ listsFromApi: listsFromApi });
     }
     const matching = listsFromApi.filter((list) => list.id === listId);
-    if (debug) {
-      console.log({ matching: matching });
-    }
-    return matching.length === 0;
+    return matching.length > 0;
   });
 };
 
