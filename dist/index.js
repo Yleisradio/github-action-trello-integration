@@ -83,11 +83,7 @@ function getLabelsOfBoard() {
             return [];
         }
         else {
-            const data = response.json();
-            if (debug) {
-                console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-            }
-            return data;
+            return response.json();
         }
     })
         .catch((error) => error);
@@ -114,11 +110,7 @@ function getMembersOfBoard() {
             return [];
         }
         else {
-            const data = response.json();
-            if (debug) {
-                console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-            }
-            return data;
+            return response.json();
         }
     })
         .catch((error) => error);
@@ -176,11 +168,7 @@ function getCardsOfList(listId) {
             return [];
         }
         else {
-            const data = response.json();
-            if (debug) {
-                console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-            }
-            return data;
+            return response.json();
         }
     })
         .catch((error) => error);
@@ -214,14 +202,10 @@ function createCard(listId, params) {
         .then((response) => {
         if (!response.ok) {
             console.trace(JSON.stringify(response, undefined, 2));
-            return [];
+            return null;
         }
         else {
-            const data = response.json();
-            if (debug) {
-                console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-            }
-            return data;
+            return response.json();
         }
     })
         .catch((error) => error);
@@ -253,11 +237,7 @@ function updateCard(cardId, params) {
             return [];
         }
         else {
-            const data = response.json();
-            if (debug) {
-                console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-            }
-            return data;
+            return response.json();
         }
     })
         .catch((error) => error);
@@ -285,11 +265,7 @@ function getCardAttachments(cardId) {
             return [];
         }
         else {
-            const data = response.json();
-            if (debug) {
-                console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-            }
-            return data;
+            return response.json();
         }
     })
         .catch((error) => error);
@@ -319,14 +295,10 @@ function addUrlSourceToCard(cardId, url) {
         .then((response) => {
         if (!response.ok) {
             console.trace(JSON.stringify(response, undefined, 2));
-            return [];
+            return null;
         }
         else {
-            const data = response.json();
-            if (debug) {
-                console.log(`${functionName} got response:`, JSON.stringify(data, undefined, 2));
-            }
-            return data;
+            return response.json();
         }
     })
         .catch((error) => error);
@@ -397,6 +369,7 @@ catch (error) {
     core.setFailed(error);
 }
 function issueOpenedCreateCard() {
+    var _a;
     const issue = ghPayload.issue;
     const issueEventName = github.context.eventName;
     const issueNumber = issue === null || issue === void 0 ? void 0 : issue.number;
@@ -405,6 +378,7 @@ function issueOpenedCreateCard() {
     const issueUrl = issue === null || issue === void 0 ? void 0 : issue.html_url;
     const issueAssigneeNicks = issue === null || issue === void 0 ? void 0 : issue.assignees.map((assignee) => assignee.login);
     const issueLabelNames = issue === null || issue === void 0 ? void 0 : issue.labels.map((label) => label.name);
+    const repoHtmlUrl = (_a = github.context.payload.repository) === null || _a === void 0 ? void 0 : _a.html_url;
     if (debug) {
         console.log(JSON.stringify({
             function: 'issueOpenedCreateCard()',
@@ -445,15 +419,31 @@ function issueOpenedCreateCard() {
             labelIds: trelloLabelIds.join(),
         };
         console.log(`Creating new card to ${listId} from issue  "[#${issueNumber}] ${issueTitle}"`);
-        (0, api_1.createCard)(listId, params).then((response) => {
+        (0, api_1.createCard)(listId, params).then((createdCard) => {
+            if (createdCard === null) {
+                core.setFailed('Creating new card faiiled. Check the actioun logs.');
+                console.trace();
+                return;
+            }
+            if (!repoHtmlUrl) {
+                core.setFailed(`Resolving repository URL failed, no backlink set. Check card "${createdCard.name}", URL: ${createdCard.url}.`);
+                return;
+            }
             if (debug)
-                console.log(`createCard got response:`, `Card created: [#${issueNumber}] ${issueTitle}`, JSON.stringify(response, undefined, 2));
+                console.log(`Card created: "${createdCard.name}"`, JSON.stringify(createdCard, undefined, 2));
+            (0, api_1.addUrlSourceToCard)(createdCard.id, repoHtmlUrl).then((createdAttachment) => {
+                if (debug) {
+                    console.log('Created new card attachment: ', JSON.stringify(createdAttachment, undefined, 2));
+                }
+            });
         });
     });
 }
 function pullRequestEventMoveCard() {
+    var _a;
     const eventName = github.context.eventName;
     const pullRequest = ghPayload.pull_request;
+    const repoHtmlUrl = ((_a = github.context.payload.repository) === null || _a === void 0 ? void 0 : _a.html_url) || 'URL missing in GH payload';
     if (debug) {
         console.log('github', JSON.stringify(github, undefined, 2));
         console.log(JSON.stringify({
@@ -513,7 +503,8 @@ function pullRequestEventMoveCard() {
             (0, api_1.updateCard)(card.id, params).then((trelloCard) => {
                 (0, api_1.getCardAttachments)(trelloCard.id).then((cardAttachments) => {
                     console.log('getCardAttachments response: ', JSON.stringify(cardAttachments, undefined, 2));
-                    const cardsWithRepoReference = cardAttachments.filter((cardAttachment) => cardAttachment.url.substr(0));
+                    // We wanna touch cards explicitly linked to the current repository.
+                    const cardsWithRepoReference = cardAttachments.filter((cardAttachment) => cardAttachment.url.startsWith(repoHtmlUrl));
                 });
                 (0, api_1.addUrlSourceToCard)(card.id, (pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.html_url) || '');
             });

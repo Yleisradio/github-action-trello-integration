@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
+import { create } from 'domain';
 
 import {
   getLabelsOfBoard,
@@ -57,6 +58,8 @@ function issueOpenedCreateCard() {
   const issueUrl = issue?.html_url;
   const issueAssigneeNicks = issue?.assignees.map((assignee: any) => assignee.login);
   const issueLabelNames = issue?.labels.map((label: any) => label.name);
+  const repoHtmlUrl = github.context.payload.repository?.html_url;
+
   if (debug) {
     console.log(
       JSON.stringify(
@@ -111,13 +114,33 @@ function issueOpenedCreateCard() {
 
     console.log(`Creating new card to ${listId} from issue  "[#${issueNumber}] ${issueTitle}"`);
 
-    createCard(listId, params).then((response) => {
+    createCard(listId, params).then((createdCard) => {
+      if (createdCard === null) {
+        core.setFailed('Creating new card faiiled. Check the actioun logs.');
+        console.trace();
+        return;
+      }
+      if (!repoHtmlUrl) {
+        core.setFailed(
+          `Resolving repository URL failed, no backlink set. Check card "${createdCard.name}", URL: ${createdCard.url}.`,
+        );
+        return;
+      }
+
       if (debug)
         console.log(
-          `createCard got response:`,
-          `Card created: [#${issueNumber}] ${issueTitle}`,
-          JSON.stringify(response, undefined, 2),
+          `Card created: "${createdCard.name}"`,
+          JSON.stringify(createdCard, undefined, 2),
         );
+
+      addUrlSourceToCard(createdCard.id, repoHtmlUrl).then((createdAttachment) => {
+        if (debug) {
+          console.log(
+            'Created new card attachment: ',
+            JSON.stringify(createdAttachment, undefined, 2),
+          );
+        }
+      });
     });
   });
 }
@@ -125,6 +148,7 @@ function issueOpenedCreateCard() {
 function pullRequestEventMoveCard() {
   const eventName: string = github.context.eventName;
   const pullRequest = ghPayload.pull_request;
+  const repoHtmlUrl = github.context.payload.repository?.html_url || 'URL missing in GH payload';
 
   if (debug) {
     console.log('github', JSON.stringify(github, undefined, 2));
@@ -205,8 +229,9 @@ function pullRequestEventMoveCard() {
             'getCardAttachments response: ',
             JSON.stringify(cardAttachments, undefined, 2),
           );
+          // We wanna touch cards explicitly linked to the current repository.
           const cardsWithRepoReference = cardAttachments.filter((cardAttachment) =>
-            cardAttachment.url.substr(0),
+            cardAttachment.url.startsWith(repoHtmlUrl),
           );
         });
         addUrlSourceToCard(card.id, pullRequest?.html_url || '');
