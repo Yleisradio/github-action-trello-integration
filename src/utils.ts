@@ -24,20 +24,20 @@ const validateIdPattern = (id: string) => {
  *
  * @throws if lists is not on the board.
  */
-const validateListExistsOnBoard = async (listId: string) => {
+const validateListExistsOnBoard = (listId: string) => {
   if (!validateIdPattern(listId)) {
     return false;
   }
-  const listsOnBoard = await getListsOnBoard();
-  if (debug) {
-    console.log({ listsOnBoard: listsOnBoard });
-  }
-  const matching = listsOnBoard.filter((list) => list.id === listId);
-  if (matching.length === 0) {
-    console.error('List id is not valid (pattern): ' + listId);
-    return false;
-  }
-  return true;
+  return getListsOnBoard().then((listsFromApi) => {
+    if (debug) {
+      console.log({ listsFromApi: listsFromApi });
+    }
+    const matching = listsFromApi.filter((list) => list.id === listId);
+    if (debug) {
+      console.log({ matching: matching });
+    }
+    return matching.length === 0;
+  });
 };
 
 const boardId = (): string => {

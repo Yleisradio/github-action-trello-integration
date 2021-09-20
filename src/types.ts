@@ -5,10 +5,10 @@ interface TrelloList {
   name: string;
   closed: boolean;
   pos: number;
-  softLimit: string;
+  softLimit: string | null;
   idBoard: string;
   subscribed: boolean;
-  limits: {
+  limits?: {
     attachments: {
       perBoard: {
         status: string;

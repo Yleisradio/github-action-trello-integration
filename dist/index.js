@@ -79,9 +79,7 @@ function getLabelsOfBoard() {
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
         .then((response) => {
         if (!response.ok) {
-            if (debug) {
-                console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
-            }
+            console.trace(JSON.stringify(response, undefined, 2));
             return [];
         }
         else {
@@ -112,9 +110,7 @@ function getMembersOfBoard() {
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
         .then((response) => {
         if (!response.ok) {
-            if (debug) {
-                console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
-            }
+            console.trace(JSON.stringify(response, undefined, 2));
             return [];
         }
         else {
@@ -150,7 +146,7 @@ function getListsOnBoard() {
     return (0, node_fetch_1.default)(buildApiUri(endpoint, endpointArgs), options)
         .then((response) => {
         if (!response.ok) {
-            console.error(`Request to ${endpoint} failed, status ${response.status} ${response.statusText}`);
+            console.trace(JSON.stringify(response, undefined, 2));
             return [];
         }
         return response.json();
@@ -176,9 +172,7 @@ function getCardsOfList(listId) {
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
         .then((response) => {
         if (!response.ok) {
-            if (debug) {
-                console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
-            }
+            console.trace(JSON.stringify(response, undefined, 2));
             return [];
         }
         else {
@@ -219,9 +213,7 @@ function createCard(listId, params) {
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
         .then((response) => {
         if (!response.ok) {
-            if (debug) {
-                console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
-            }
+            console.trace(JSON.stringify(response, undefined, 2));
             return [];
         }
         else {
@@ -257,9 +249,7 @@ function updateCard(cardId, params) {
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
         .then((response) => {
         if (!response.ok) {
-            if (debug) {
-                console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
-            }
+            console.trace(JSON.stringify(response, undefined, 2));
             return [];
         }
         else {
@@ -291,9 +281,7 @@ function getCardAttachments(cardId) {
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
         .then((response) => {
         if (!response.ok) {
-            if (debug) {
-                console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
-            }
+            console.trace(JSON.stringify(response, undefined, 2));
             return [];
         }
         else {
@@ -330,9 +318,7 @@ function addUrlSourceToCard(cardId, url) {
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
         .then((response) => {
         if (!response.ok) {
-            if (debug) {
-                console.log(`${functionName} got response:`, JSON.stringify(response, undefined, 2));
-            }
+            console.trace(JSON.stringify(response, undefined, 2));
             return [];
         }
         else {
@@ -562,15 +548,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.boardId = exports.validateListExistsOnBoard = exports.validateIdPattern = void 0;
 const core = __importStar(__nccwpck_require__(3020));
@@ -597,21 +574,21 @@ exports.validateIdPattern = validateIdPattern;
  *
  * @throws if lists is not on the board.
  */
-const validateListExistsOnBoard = (listId) => __awaiter(void 0, void 0, void 0, function* () {
+const validateListExistsOnBoard = (listId) => {
     if (!validateIdPattern(listId)) {
         return false;
     }
-    const listsOnBoard = yield (0, api_1.getListsOnBoard)();
-    if (debug) {
-        console.log({ listsOnBoard: listsOnBoard });
-    }
-    const matching = listsOnBoard.filter((list) => list.id === listId);
-    if (matching.length === 0) {
-        console.error('List id is not valid (pattern): ' + listId);
-        return false;
-    }
-    return true;
-});
+    return (0, api_1.getListsOnBoard)().then((listsFromApi) => {
+        if (debug) {
+            console.log({ listsFromApi: listsFromApi });
+        }
+        const matching = listsFromApi.filter((list) => list.id === listId);
+        if (debug) {
+            console.log({ matching: matching });
+        }
+        return matching.length === 0;
+    });
+};
 exports.validateListExistsOnBoard = validateListExistsOnBoard;
 const boardId = () => {
     if (process &&
