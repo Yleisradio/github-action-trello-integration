@@ -197,15 +197,19 @@ function createCard(listId: string, params: TrelloCardRequestParams): Promise<Tr
     ...(apiBaseHeaders() as RequestInit),
     method: 'POST',
   };
-  const requestParams = {
-    name: `[#${params.number}] ${params.title}`,
-    desc: params.description,
-    pos: 'bottom',
-    idList: listId,
-    urlSource: params.sourceUrl,
-    idMembers: params.memberIds,
-    idLabels: params.labelIds,
-  } as unknown as URLSearchParams;
+  // Examples imply that one shoudl be able to pass an object to the constructor, yet
+  // TS is not happy about it, so we convert the object to string first.
+  const cardData = new URLSearchParams(
+    JSON.stringify({
+      name: `[#${params.number}] ${params.title}`,
+      desc: params.description,
+      pos: 'bottom',
+      idList: listId,
+      urlSource: params.sourceUrl,
+      idMembers: params.memberIds,
+      idLabels: params.labelIds,
+    }),
+  );
 
   const functionName = 'createCard()';
 
@@ -213,11 +217,11 @@ function createCard(listId: string, params: TrelloCardRequestParams): Promise<Tr
     console.log(
       ` ${functionName} calling ${buildApiUri(
         endpoint,
-        requestParams.toString(),
-      )} with requestParams: ${JSON.stringify(requestParams.toString(), undefined, 2)}`,
+        cardData.toString(),
+      )} with requestParams: ${JSON.stringify(cardData.toString(), undefined, 2)}`,
     );
   }
-  return fetch(buildApiUri(endpoint, requestParams.toString()), options as RequestInit)
+  return fetch(buildApiUri(endpoint, cardData.toString()), options as RequestInit)
     .then((response) => {
       if (!response.ok) {
         console.trace(JSON.stringify(response, undefined, 2));
