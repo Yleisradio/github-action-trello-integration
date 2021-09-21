@@ -6,6 +6,15 @@
 
 "use strict";
 
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -58,17 +67,17 @@ function getLabelsOfBoard() {
     const endpoint = `/boards/${trelloBoard}/labels`;
     const options = Object.assign({}, apiBaseHeaders());
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
-        .then((response) => {
+        .then((response) => __awaiter(this, void 0, void 0, function* () {
         if (!response.ok) {
             console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
-        const data = response.json();
+        const data = (yield response.json());
         if (debug) {
             console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
         }
         return data;
-    })
+    }))
         .catch((error) => error);
 }
 exports.getLabelsOfBoard = getLabelsOfBoard;
@@ -83,17 +92,17 @@ function getMembersOfBoard() {
     const endpoint = `/boards/${trelloBoard}/members`;
     const options = Object.assign({}, apiBaseHeaders());
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
-        .then((response) => {
+        .then((response) => __awaiter(this, void 0, void 0, function* () {
         if (!response.ok) {
             console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
-        const data = response.json();
+        const data = (yield response.json());
         if (debug) {
             console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
         }
         return data;
-    })
+    }))
         .catch((error) => error);
 }
 exports.getMembersOfBoard = getMembersOfBoard;
@@ -111,17 +120,17 @@ function getListsOnBoard() {
     endpointArgs.append('filter', 'open');
     const options = Object.assign({}, apiBaseHeaders());
     return (0, node_fetch_1.default)(buildApiUri(endpoint, endpointArgs), options)
-        .then((response) => {
+        .then((response) => __awaiter(this, void 0, void 0, function* () {
         if (!response.ok) {
             console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
-        const data = response.json();
+        const data = (yield response.json());
         if (debug) {
             console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
         }
         return data;
-    })
+    }))
         .catch((error) => error);
 }
 exports.getListsOnBoard = getListsOnBoard;
@@ -138,17 +147,17 @@ function getCardsOfListOrBoard(listId) {
     const endpoint = listId ? `/lists/${listId}/cards` : `/boards/${trelloBoard}/cards`;
     const options = Object.assign({}, apiBaseHeaders());
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
-        .then((response) => {
+        .then((response) => __awaiter(this, void 0, void 0, function* () {
         if (!response.ok) {
             console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
-        const data = response.json();
+        const data = (yield response.json());
         if (debug) {
             console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
         }
         return data;
-    })
+    }))
         .catch((error) => error);
 }
 exports.getCardsOfListOrBoard = getCardsOfListOrBoard;
@@ -176,17 +185,17 @@ function createCard(listId, params) {
     cardData.append('idLabels', params.labelIds || '');
     const functionName = 'createCard()';
     return (0, node_fetch_1.default)(buildApiUri(endpoint, cardData), options)
-        .then((response) => {
+        .then((response) => __awaiter(this, void 0, void 0, function* () {
         if (!response.ok) {
             console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
-        const data = response.json();
+        const data = (yield response.json());
         if (debug) {
             console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
         }
         return data;
-    })
+    }))
         .catch((error) => error);
 }
 exports.createCard = createCard;
@@ -207,17 +216,17 @@ function updateCard(cardId, params) {
         } });
     const functionName = 'updateCard()';
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
-        .then((response) => {
+        .then((response) => __awaiter(this, void 0, void 0, function* () {
         if (!response.ok) {
             console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
-        const data = response.json();
+        const data = (yield response.json());
         if (debug) {
             console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
         }
         return data;
-    })
+    }))
         .catch((error) => error);
 }
 exports.updateCard = updateCard;
@@ -233,17 +242,17 @@ function getCardAttachments(cardId) {
     const endpoint = `/cards/${cardId}/attachments`;
     const options = Object.assign({}, apiBaseHeaders());
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
-        .then((response) => {
+        .then((response) => __awaiter(this, void 0, void 0, function* () {
         if (!response.ok) {
             console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
-        const data = response.json();
+        const data = (yield response.json());
         if (debug) {
             console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
         }
         return data;
-    })
+    }))
         .catch((error) => error);
 }
 exports.getCardAttachments = getCardAttachments;
@@ -262,17 +271,17 @@ function addAttachmentToCard(cardId, url) {
     const queryParams = new URLSearchParams();
     queryParams.append('url', url);
     return (0, node_fetch_1.default)(buildApiUri(endpoint, queryParams), options)
-        .then((response) => {
+        .then((response) => __awaiter(this, void 0, void 0, function* () {
         if (!response.ok) {
             console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
-        const data = response.json();
+        const data = (yield response.json());
         if (debug) {
             console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
         }
         return data;
-    })
+    }))
         .catch((error) => error);
 }
 exports.addAttachmentToCard = addAttachmentToCard;
