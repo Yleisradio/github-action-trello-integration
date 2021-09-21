@@ -10,7 +10,7 @@ import {
   getCardAttachments,
   addAttachmentToCard,
 } from './api';
-import { TrelloCardRequestParams } from './types';
+import { TrelloCard, TrelloCardRequestParams } from './types';
 import { validateListExistsOnBoard } from './utils';
 
 const debug = core.getInput('verbose');
@@ -180,21 +180,48 @@ function pullRequestEventMoveCard() {
               core.setFailed(trelloCard);
               return;
             }
+
             if (debug) {
               console.log(`Card "${card.name}" moved to board ${targetList}.`);
-              console.log(`Adding link (attachment) to pull request to the card "${card.name}".`);
             }
-            addAttachmentToCard(card.id, pullRequest?.html_url || '').then((attachment) => {
-              if (typeof attachment === 'string') {
-                core.setFailed(attachment);
-                return;
-              }
-              if (debug) {
-                console.log(
-                  `Link (attachment) to pull request URL ${attachment.url} added to the card "${card.name}".`,
+
+            // Check if the PR is already linked from the Card.
+            // Card has attachments and we are satisfied if the beginning of
+            // any attachment url matches the public repository URL.
+            const cardHasPrLinked = (card: TrelloCard) => {
+              return getCardAttachments(card.id).then((attachments) => {
+                if (typeof attachments === 'string') {
+                  return false;
+                }
+
+                const matchingAttachment = attachments.find((attachment) =>
+                  attachment.url.startsWith(repoHtmlUrl),
                 );
-              }
-            });
+                if (typeof matchingAttachment !== 'undefined') {
+                  if (debug) {
+                    console.log(
+                      `Adding link (attachment) to pull request to the card "${card.name}".`,
+                    );
+                  }
+                  return true;
+                }
+                return false;
+              });
+            };
+
+            // Create the backlink to PR only if it is not there yet.
+            !cardHasPrLinked(card) &&
+              addAttachmentToCard(card.id, pullRequest?.html_url || '').then((attachment) => {
+                if (typeof attachment === 'string') {
+                  core.setFailed(attachment);
+                  return;
+                }
+                if (debug) {
+                  console.log(
+                    `Link (attachment) to pull request URL ${attachment.url} added to the card "${card.name}".`,
+                  );
+                }
+              });
           })
           .catch((error) => {
             console.error(error);
