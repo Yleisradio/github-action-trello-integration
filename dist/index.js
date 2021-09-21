@@ -54,7 +54,7 @@ function getLabelsOfBoard() {
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
         .then((response) => {
         if (!response.ok) {
-            console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
+            console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
         else {
@@ -77,7 +77,7 @@ function getMembersOfBoard() {
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
         .then((response) => {
         if (!response.ok) {
-            console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
+            console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
         else {
@@ -102,7 +102,7 @@ function getListsOnBoard() {
     return (0, node_fetch_1.default)(buildApiUri(endpoint, endpointArgs), options)
         .then((response) => {
         if (!response.ok) {
-            console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
+            console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
         return response.json();
@@ -125,7 +125,7 @@ function getCardsOfListOrBoard(listId) {
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
         .then((response) => {
         if (!response.ok) {
-            console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
+            console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
         else {
@@ -161,7 +161,7 @@ function createCard(listId, params) {
     return (0, node_fetch_1.default)(buildApiUri(endpoint, cardData.toString()), options)
         .then((response) => {
         if (!response.ok) {
-            console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
+            console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
         else {
@@ -190,7 +190,7 @@ function updateCard(cardId, params) {
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
         .then((response) => {
         if (!response.ok) {
-            console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
+            console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
         else {
@@ -214,7 +214,7 @@ function getCardAttachments(cardId) {
     return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
         .then((response) => {
         if (!response.ok) {
-            console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
+            console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
         else {
@@ -241,7 +241,7 @@ function addAttachmentToCard(cardId, url) {
     return (0, node_fetch_1.default)(buildApiUri(endpoint, queryParams.toString()), options)
         .then((response) => {
         if (!response.ok) {
-            console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
+            console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
         else {

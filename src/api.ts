@@ -58,7 +58,7 @@ function getLabelsOfBoard(): Promise<TrelloLabel[] | string> {
   return fetch(buildApiUri(endpoint), options)
     .then((response) => {
       if (!response.ok) {
-        console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
+        console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
         return `${response.status} ${response.text}`;
       } else {
         return response.json() as unknown as TrelloLabel[];
@@ -81,7 +81,7 @@ function getMembersOfBoard(): Promise<TrelloMember[] | string> {
   return fetch(buildApiUri(endpoint), options)
     .then((response) => {
       if (!response.ok) {
-        console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
+        console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
         return `${response.status} ${response.text}`;
       } else {
         return response.json() as unknown as TrelloLabel[];
@@ -106,7 +106,7 @@ function getListsOnBoard(): Promise<TrelloList[] | string> {
   return fetch(buildApiUri(endpoint, endpointArgs), options)
     .then((response: Response) => {
       if (!response.ok) {
-        console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
+        console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
         return `${response.status} ${response.text}`;
       }
       return response.json() as unknown as TrelloList[];
@@ -130,7 +130,7 @@ function getCardsOfListOrBoard(listId?: string): Promise<TrelloCard[] | string> 
   return fetch(buildApiUri(endpoint), options)
     .then((response) => {
       if (!response.ok) {
-        console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
+        console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
         return `${response.status} ${response.text}`;
       } else {
         return response.json() as unknown as TrelloLabel[];
@@ -170,7 +170,7 @@ function createCard(listId: string, params: TrelloCardRequestParams): Promise<Tr
   return fetch(buildApiUri(endpoint, cardData.toString()), options as RequestInit)
     .then((response) => {
       if (!response.ok) {
-        console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
+        console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
         return `${response.status} ${response.text}`;
       } else {
         return response.json() as unknown as TrelloLabel[];
@@ -202,7 +202,7 @@ function updateCard(cardId: string, params: TrelloCardRequestParams): Promise<Tr
   return fetch(buildApiUri(endpoint), options as RequestInit)
     .then((response) => {
       if (!response.ok) {
-        console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
+        console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
         return `${response.status} ${response.text}`;
       } else {
         return response.json() as unknown as TrelloLabel[];
@@ -226,7 +226,7 @@ function getCardAttachments(cardId: string): Promise<TrelloAttachment[] | string
   return fetch(buildApiUri(endpoint), options as RequestInit)
     .then((response) => {
       if (!response.ok) {
-        console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
+        console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
         return `${response.status} ${response.text}`;
       } else {
         return response.json() as unknown as TrelloLabel[];
@@ -256,7 +256,7 @@ function addAttachmentToCard(cardId: string, url: string): Promise<TrelloAttachm
   return fetch(buildApiUri(endpoint, queryParams.toString()), options as RequestInit)
     .then((response) => {
       if (!response.ok) {
-        console.error(`API endpoint ${endpoint} error: ${JSON.stringify(response, undefined, 2)}`);
+        console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
         return `${response.status} ${response.text}`;
       } else {
         return response.json() as unknown as TrelloAttachment[];
