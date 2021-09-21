@@ -1,5 +1,5 @@
 name: 'Trello cards action'
-description: 'Act on a Trello card based on what happens in Github issue or pull request: New cards for new GH issues, move cards when PR is created or closed.'
+description: 'Create or move Trello cards based on Github events (issues, pull requests).'
 inputs:
   action:
     description: 'Desired action to do on a Card'
