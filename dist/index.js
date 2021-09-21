@@ -175,16 +175,16 @@ function createCard(listId, params) {
     const options = Object.assign(Object.assign({}, apiBaseHeaders()), { method: 'POST' });
     // Examples imply that one shoudl be able to pass an object to the constructor, yet
     // TS is not happy about it, so we convert the object to string first.
-    const cardData = new URLSearchParams();
-    cardData.append('name', `[#${params.number}] ${params.title}`);
-    cardData.append('desc', params.description || '');
-    cardData.append('pos', 'bottom');
-    cardData.append('idList', listId);
-    cardData.append('urlSource', params.sourceUrl || '');
-    cardData.append('idMembers', params.memberIds || '');
-    cardData.append('idLabels', params.labelIds || '');
+    const queryParams = new URLSearchParams();
+    queryParams.append('name', `[#${params.number}] ${params.title}`);
+    queryParams.append('desc', params.description || '');
+    queryParams.append('pos', 'bottom');
+    queryParams.append('idList', listId);
+    queryParams.append('urlSource', params.sourceUrl || '');
+    queryParams.append('idMembers', params.memberIds || '');
+    queryParams.append('idLabels', params.labelIds || '');
     const functionName = 'createCard()';
-    return (0, node_fetch_1.default)(buildApiUri(endpoint, cardData), options)
+    return (0, node_fetch_1.default)(buildApiUri(endpoint, queryParams), options)
         .then((response) => __awaiter(this, void 0, void 0, function* () {
         if (!response.ok) {
             console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
@@ -210,12 +210,11 @@ exports.createCard = createCard;
  */
 function updateCard(cardId, params) {
     const endpoint = `/cards/${cardId}`;
-    const options = Object.assign(Object.assign({}, apiBaseHeaders()), { method: 'PUT', form: {
-            idList: params.destinationListId,
-            idMembers: params.memberIds,
-        } });
-    const functionName = 'updateCard()';
-    return (0, node_fetch_1.default)(buildApiUri(endpoint), options)
+    const options = Object.assign(Object.assign({}, apiBaseHeaders()), { method: 'PUT' });
+    const queryParams = new URLSearchParams();
+    queryParams.append('idList', params.destinationListId || '');
+    queryParams.append('idMembers', params.memberIds || '');
+    return (0, node_fetch_1.default)(buildApiUri(endpoint, queryParams), options)
         .then((response) => __awaiter(this, void 0, void 0, function* () {
         if (!response.ok) {
             console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
