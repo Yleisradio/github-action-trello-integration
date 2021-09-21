@@ -53,6 +53,7 @@ Required env variables include:
 Optional env variables include:
 
 - `TRELLO_ACTION_VERBOSE` to make action logs slightly more verbose.
+- `TRELLO_API_DEBUG` expose all API call resposes in action log.
 
 ### Pull requests and Cards referring to PR or issue
 
@@ -99,6 +100,7 @@ Optional env variables include:
 
 - `TRELLO_SOURCE_LIST_ID` The id of your Trello list (column) where you wish to limit searching the Card.
 - `TRELLO_ACTION_VERBOSE` to make action logs slightly more verbose.
+- `TRELLO_API_DEBUG` expose all API call resposes in action log.
 
 ## API key and token
 

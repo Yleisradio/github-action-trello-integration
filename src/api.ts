@@ -15,6 +15,7 @@ const trelloBoard = boardId();
 
 const apiKey: string = process.env.TRELLO_API_KEY || '';
 const apiToken: string = process.env.TRELLO_API_TOKEN || '';
+const debug: string | boolean = process.env.TRELLO_API_DEBUG || false;
 
 if (!apiKey || !apiToken || !trelloBoard) {
   throw Error('Trello API key and/or token or Board ID is missing.');
@@ -60,9 +61,13 @@ function getLabelsOfBoard(): Promise<TrelloLabel[] | string> {
       if (!response.ok) {
         console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
         return `${response.status} ${response.text}`;
-      } else {
-        return response.json() as unknown as TrelloLabel[];
       }
+
+      const data = response.json() as unknown as TrelloLabel[];
+      if (debug) {
+        console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
+      }
+      return data;
     })
     .catch((error) => error);
 }
@@ -83,9 +88,13 @@ function getMembersOfBoard(): Promise<TrelloMember[] | string> {
       if (!response.ok) {
         console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
         return `${response.status} ${response.text}`;
-      } else {
-        return response.json() as unknown as TrelloLabel[];
       }
+
+      const data = response.json() as unknown as TrelloLabel[];
+      if (debug) {
+        console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
+      }
+      return data;
     })
     .catch((error) => error);
 }
@@ -109,7 +118,12 @@ function getListsOnBoard(): Promise<TrelloList[] | string> {
         console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
         return `${response.status} ${response.text}`;
       }
-      return response.json() as unknown as TrelloList[];
+
+      const data = response.json() as unknown as TrelloLabel[];
+      if (debug) {
+        console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
+      }
+      return data;
     })
     .catch((error) => error);
 }
@@ -132,9 +146,13 @@ function getCardsOfListOrBoard(listId?: string): Promise<TrelloCard[] | string> 
       if (!response.ok) {
         console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
         return `${response.status} ${response.text}`;
-      } else {
-        return response.json() as unknown as TrelloLabel[];
       }
+
+      const data = response.json() as unknown as TrelloLabel[];
+      if (debug) {
+        console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
+      }
+      return data;
     })
     .catch((error) => error);
 }
@@ -172,9 +190,13 @@ function createCard(listId: string, params: TrelloCardRequestParams): Promise<Tr
       if (!response.ok) {
         console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
         return `${response.status} ${response.text}`;
-      } else {
-        return response.json() as unknown as TrelloLabel[];
       }
+
+      const data = response.json() as unknown as TrelloLabel[];
+      if (debug) {
+        console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
+      }
+      return data;
     })
     .catch((error) => error);
 }
@@ -204,9 +226,13 @@ function updateCard(cardId: string, params: TrelloCardRequestParams): Promise<Tr
       if (!response.ok) {
         console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
         return `${response.status} ${response.text}`;
-      } else {
-        return response.json() as unknown as TrelloLabel[];
       }
+
+      const data = response.json() as unknown as TrelloLabel[];
+      if (debug) {
+        console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
+      }
+      return data;
     })
     .catch((error) => error);
 }
@@ -228,9 +254,13 @@ function getCardAttachments(cardId: string): Promise<TrelloAttachment[] | string
       if (!response.ok) {
         console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
         return `${response.status} ${response.text}`;
-      } else {
-        return response.json() as unknown as TrelloLabel[];
       }
+
+      const data = response.json() as unknown as TrelloLabel[];
+      if (debug) {
+        console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
+      }
+      return data;
     })
     .catch((error) => error);
 }
@@ -258,9 +288,13 @@ function addAttachmentToCard(cardId: string, url: string): Promise<TrelloAttachm
       if (!response.ok) {
         console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
         return `${response.status} ${response.text}`;
-      } else {
-        return response.json() as unknown as TrelloAttachment[];
       }
+
+      const data = response.json() as unknown as TrelloLabel[];
+      if (debug) {
+        console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
+      }
+      return data;
     })
     .catch((error) => error);
 }

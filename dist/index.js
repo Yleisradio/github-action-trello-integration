@@ -17,6 +17,7 @@ const apiBaseUrl = 'https://api.trello.com/1';
 const trelloBoard = (0, utils_1.boardId)();
 const apiKey = process.env.TRELLO_API_KEY || '';
 const apiToken = process.env.TRELLO_API_TOKEN || '';
+const debug = process.env.TRELLO_API_DEBUG || false;
 if (!apiKey || !apiToken || !trelloBoard) {
     throw Error('Trello API key and/or token or Board ID is missing.');
 }
@@ -57,9 +58,11 @@ function getLabelsOfBoard() {
             console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
-        else {
-            return response.json();
+        const data = response.json();
+        if (debug) {
+            console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
         }
+        return data;
     })
         .catch((error) => error);
 }
@@ -80,9 +83,11 @@ function getMembersOfBoard() {
             console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
-        else {
-            return response.json();
+        const data = response.json();
+        if (debug) {
+            console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
         }
+        return data;
     })
         .catch((error) => error);
 }
@@ -105,7 +110,11 @@ function getListsOnBoard() {
             console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
-        return response.json();
+        const data = response.json();
+        if (debug) {
+            console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
+        }
+        return data;
     })
         .catch((error) => error);
 }
@@ -128,9 +137,11 @@ function getCardsOfListOrBoard(listId) {
             console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
-        else {
-            return response.json();
+        const data = response.json();
+        if (debug) {
+            console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
         }
+        return data;
     })
         .catch((error) => error);
 }
@@ -164,9 +175,11 @@ function createCard(listId, params) {
             console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
-        else {
-            return response.json();
+        const data = response.json();
+        if (debug) {
+            console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
         }
+        return data;
     })
         .catch((error) => error);
 }
@@ -193,9 +206,11 @@ function updateCard(cardId, params) {
             console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
-        else {
-            return response.json();
+        const data = response.json();
+        if (debug) {
+            console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
         }
+        return data;
     })
         .catch((error) => error);
 }
@@ -217,9 +232,11 @@ function getCardAttachments(cardId) {
             console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
-        else {
-            return response.json();
+        const data = response.json();
+        if (debug) {
+            console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
         }
+        return data;
     })
         .catch((error) => error);
 }
@@ -244,9 +261,11 @@ function addAttachmentToCard(cardId, url) {
             console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
             return `${response.status} ${response.text}`;
         }
-        else {
-            return response.json();
+        const data = response.json();
+        if (debug) {
+            console.log(`${endpoint} response is`, JSON.stringify(data, undefined, 2));
         }
+        return data;
     })
         .catch((error) => error);
 }
