@@ -29,7 +29,7 @@ jobs:
     name: Create Trello Card
     steps:
       - name: Call trello-github-actions
-        uses: Yleisradio/yle-gh-action--trello-integration@v0.60
+        uses: Yleisradio/github-action-trello-integration@v1.0.1
         with:
           action: issue_opened_create_card
         env:
@@ -76,7 +76,7 @@ jobs:
     steps:
       - name: Call trello-github-actions
         id: call-trello-github-actions
-        uses: Yleisradio/yle-gh-action--trello-integration@v0.65
+        uses: Yleisradio/github-action-trello-integration@v1.0.1
         with:
           action: pull_request_event_move_card
         env:
@@ -122,8 +122,9 @@ Change and commit the source code. Compile with `@vercel/ncc` as instructed in [
 
 ```bash
 #`pre-release` script runs linter and formatter and compiles the code.
+yarn install
 yarn pre-release
 git add .
 git commit -m'Compiled new code'
-git tag -a 'Tagging new release v1.0.1' v1.0.1
+git tag -a 'Tagging new release v1.0.2' v1.0.2
 ```
