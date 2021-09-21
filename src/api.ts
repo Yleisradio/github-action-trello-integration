@@ -221,14 +221,12 @@ function updateCard(cardId: string, params: TrelloCardRequestParams): Promise<Tr
   const options = {
     ...apiBaseHeaders(),
     method: 'PUT',
-    form: {
-      idList: params.destinationListId,
-      idMembers: params.memberIds,
-    },
   };
-  const functionName = 'updateCard()';
+  const queryParams = new URLSearchParams();
+  queryParams.append('idList', params.destinationListId || '');
+  queryParams.append('idMembers', params.memberIds || '');
 
-  return fetch(buildApiUri(endpoint), options as RequestInit)
+  return fetch(buildApiUri(endpoint, queryParams), options as RequestInit)
     .then(async (response) => {
       if (!response.ok) {
         console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
