@@ -284,7 +284,7 @@ const core = __importStar(__nccwpck_require__(2669));
 const github = __importStar(__nccwpck_require__(6330));
 const api_1 = __nccwpck_require__(454);
 const utils_1 = __nccwpck_require__(254);
-const debug = core.getInput('verbose');
+const verbose = process.env.TRELLO_ACTION_VERBOSE || false;
 const action = core.getInput('action');
 /**
  * GW webhook payload.
@@ -352,7 +352,7 @@ function issueOpenedCreateCard() {
             memberIds: memberIds.join(),
             labelIds: trelloLabelIds.join(),
         };
-        if (debug) {
+        if (verbose) {
             console.log(`Creating new card to ${listId} from issue  "[#${issueNumber}] ${issueTitle}"`);
         }
         // No need to create the attachment for this repository separately since the createCard()
@@ -363,7 +363,7 @@ function issueOpenedCreateCard() {
                 core.setFailed(createdCard);
                 return;
             }
-            if (debug) {
+            if (verbose) {
                 console.log(`Card created: "[#${issueNumber}] ${issueTitle}], url ${createdCard.shortUrl}"`);
             }
         });
@@ -419,7 +419,7 @@ function pullRequestEventMoveCard() {
             memberIds: additionalMemberIds.join(),
         };
         cardsToBeMoved.forEach((card) => {
-            if (debug) {
+            if (verbose) {
                 console.log(`Moving card "${card.name}" to board to ${targetList}.`);
             }
             (0, api_1.updateCard)(card.id, params)
@@ -428,7 +428,7 @@ function pullRequestEventMoveCard() {
                     core.setFailed(trelloCard);
                     return;
                 }
-                if (debug) {
+                if (verbose) {
                     console.log(`Card "${card.name}" moved to board ${targetList}.`);
                 }
                 // Check if the PR is already linked from the Card.
@@ -441,7 +441,7 @@ function pullRequestEventMoveCard() {
                         }
                         const matchingAttachment = attachments.find((attachment) => attachment.url.startsWith(repoHtmlUrl));
                         if (typeof matchingAttachment !== 'undefined') {
-                            if (debug) {
+                            if (verbose) {
                                 console.log(`Adding link (attachment) to pull request to the card "${card.name}".`);
                             }
                             return true;
@@ -456,7 +456,7 @@ function pullRequestEventMoveCard() {
                             core.setFailed(attachment);
                             return;
                         }
-                        if (debug) {
+                        if (verbose) {
                             console.log(`Link (attachment) to pull request URL ${attachment.url} added to the card "${card.name}".`);
                         }
                     });

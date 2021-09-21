@@ -13,7 +13,7 @@ import {
 import { TrelloCard, TrelloCardRequestParams } from './types';
 import { validateListExistsOnBoard } from './utils';
 
-const debug = core.getInput('verbose');
+const verbose: string | boolean = process.env.TRELLO_ACTION_VERBOSE || false;
 const action = core.getInput('action');
 
 /**
@@ -92,7 +92,7 @@ function issueOpenedCreateCard() {
       labelIds: trelloLabelIds.join(),
     } as unknown as TrelloCardRequestParams;
 
-    if (debug) {
+    if (verbose) {
       console.log(`Creating new card to ${listId} from issue  "[#${issueNumber}] ${issueTitle}"`);
     }
     // No need to create the attachment for this repository separately since the createCard()
@@ -104,7 +104,7 @@ function issueOpenedCreateCard() {
         return;
       }
 
-      if (debug) {
+      if (verbose) {
         console.log(
           `Card created: "[#${issueNumber}] ${issueTitle}], url ${createdCard.shortUrl}"`,
         );
@@ -171,7 +171,7 @@ function pullRequestEventMoveCard() {
         memberIds: additionalMemberIds.join(),
       };
       cardsToBeMoved.forEach((card) => {
-        if (debug) {
+        if (verbose) {
           console.log(`Moving card "${card.name}" to board to ${targetList}.`);
         }
         updateCard(card.id, params)
@@ -181,7 +181,7 @@ function pullRequestEventMoveCard() {
               return;
             }
 
-            if (debug) {
+            if (verbose) {
               console.log(`Card "${card.name}" moved to board ${targetList}.`);
             }
 
@@ -198,7 +198,7 @@ function pullRequestEventMoveCard() {
                   attachment.url.startsWith(repoHtmlUrl),
                 );
                 if (typeof matchingAttachment !== 'undefined') {
-                  if (debug) {
+                  if (verbose) {
                     console.log(
                       `Adding link (attachment) to pull request to the card "${card.name}".`,
                     );
@@ -216,7 +216,7 @@ function pullRequestEventMoveCard() {
                   core.setFailed(attachment);
                   return;
                 }
-                if (debug) {
+                if (verbose) {
                   console.log(
                     `Link (attachment) to pull request URL ${attachment.url} added to the card "${card.name}".`,
                   );
