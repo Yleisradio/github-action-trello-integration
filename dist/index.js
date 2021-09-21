@@ -27,7 +27,12 @@ if (!apiKey || !apiToken || !trelloBoard) {
  * @param {string} endpoint
  * @returns string
  */
-const buildApiUri = (endpoint, query) => `${apiBaseUrl}${endpoint}?${query ? query + '&' : ''}key=${apiKey}&token=${apiToken}`;
+const buildApiUri = (endpoint, query) => {
+    const params = query ? query : new URLSearchParams();
+    params.append('key', apiKey);
+    params.append('token', apiToken);
+    return `${apiBaseUrl}${endpoint}?${params.toString()}`;
+};
 /**
  * Base headers for REST API  authentication et al.
  *
@@ -102,7 +107,8 @@ exports.getMembersOfBoard = getMembersOfBoard;
 function getListsOnBoard() {
     // We are only interested in open lists.
     const endpoint = `/boards/${trelloBoard}/lists`;
-    const endpointArgs = 'filter=open';
+    const endpointArgs = new URLSearchParams();
+    endpointArgs.append('filter', 'open');
     const options = Object.assign({}, apiBaseHeaders());
     return (0, node_fetch_1.default)(buildApiUri(endpoint, endpointArgs), options)
         .then((response) => {
@@ -169,7 +175,7 @@ function createCard(listId, params) {
     cardData.append('idMembers', params.memberIds || '');
     cardData.append('idLabels', params.labelIds || '');
     const functionName = 'createCard()';
-    return (0, node_fetch_1.default)(buildApiUri(endpoint, cardData.toString()), options)
+    return (0, node_fetch_1.default)(buildApiUri(endpoint, cardData), options)
         .then((response) => {
         if (!response.ok) {
             console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
@@ -255,7 +261,7 @@ function addAttachmentToCard(cardId, url) {
     const options = Object.assign(Object.assign({}, apiBaseHeaders()), { method: 'POST' });
     const queryParams = new URLSearchParams();
     queryParams.append('url', url);
-    return (0, node_fetch_1.default)(buildApiUri(endpoint, queryParams.toString()), options)
+    return (0, node_fetch_1.default)(buildApiUri(endpoint, queryParams), options)
         .then((response) => {
         if (!response.ok) {
             console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);

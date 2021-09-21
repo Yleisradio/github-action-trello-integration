@@ -27,8 +27,14 @@ if (!apiKey || !apiToken || !trelloBoard) {
  * @param {string} endpoint
  * @returns string
  */
-const buildApiUri = (endpoint: string, query?: string): string =>
-  `${apiBaseUrl}${endpoint}?${query ? query + '&' : ''}key=${apiKey}&token=${apiToken}`;
+const buildApiUri = (endpoint: string, query?: URLSearchParams): string => {
+  const params = query ? query : new URLSearchParams();
+
+  params.append('key', apiKey);
+  params.append('token', apiToken);
+
+  return `${apiBaseUrl}${endpoint}?${params.toString()}`;
+};
 
 /**
  * Base headers for REST API  authentication et al.
@@ -109,7 +115,8 @@ function getMembersOfBoard(): Promise<TrelloMember[] | string> {
 function getListsOnBoard(): Promise<TrelloList[] | string> {
   // We are only interested in open lists.
   const endpoint = `/boards/${trelloBoard}/lists`;
-  const endpointArgs = 'filter=open';
+  const endpointArgs = new URLSearchParams();
+  endpointArgs.append('filter', 'open');
   const options: RequestInit = { ...(apiBaseHeaders() as RequestInit) };
 
   return fetch(buildApiUri(endpoint, endpointArgs), options)
@@ -185,7 +192,7 @@ function createCard(listId: string, params: TrelloCardRequestParams): Promise<Tr
 
   const functionName = 'createCard()';
 
-  return fetch(buildApiUri(endpoint, cardData.toString()), options as RequestInit)
+  return fetch(buildApiUri(endpoint, cardData), options as RequestInit)
     .then((response) => {
       if (!response.ok) {
         console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
@@ -283,7 +290,7 @@ function addAttachmentToCard(cardId: string, url: string): Promise<TrelloAttachm
   const queryParams = new URLSearchParams();
   queryParams.append('url', url);
 
-  return fetch(buildApiUri(endpoint, queryParams.toString()), options as RequestInit)
+  return fetch(buildApiUri(endpoint, queryParams), options as RequestInit)
     .then((response) => {
       if (!response.ok) {
         console.error(`API endpoint ${endpoint} error: ${response.status} ${response.text}`);
