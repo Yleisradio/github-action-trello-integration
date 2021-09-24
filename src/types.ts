@@ -125,6 +125,12 @@ interface ghIssueCommentData {
   repoOwner: string;
   repoName: string;
 }
+interface ghPullRequestCommentData {
+  comment: string;
+  pullNumber: number;
+  repoOwner: string;
+  repoName: string;
+}
 
 export {
   TrelloList,
@@ -134,4 +140,5 @@ export {
   TrelloAttachment,
   TrelloCardRequestParams,
   ghIssueCommentData,
+  ghPullRequestCommentData,
 };
