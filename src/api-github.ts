@@ -1,13 +1,14 @@
 import * as github from '@actions/github';
+import { ghIssueCommentData } from './types';
 
 const debug: string | boolean = process.env.GITHUB_API_DEBUG || true;
 
-const addIssueComment = async (
-  comment: string,
-  issueNumber: number | undefined,
-  repoOwner: string | undefined,
-  repoName: string | undefined,
-): Promise<boolean> => {
+const addIssueComment = async ({
+  comment,
+  issueNumber,
+  repoOwner,
+  repoName,
+}: ghIssueCommentData): Promise<boolean> => {
   const githubToken: string | undefined = process.env.GITHUB_TOKEN;
   if (githubToken) {
     const octokit = github.getOctokit(githubToken);
