@@ -13,7 +13,6 @@ const addIssueComment = async ({
   if (githubToken) {
     const octokit = github.getOctokit(githubToken);
 
-    const payload = github.context.payload;
     if (debug) {
       console.debug('GH api / addIssueComment', {
         issueNumber: issueNumber,
