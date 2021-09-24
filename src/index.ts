@@ -23,6 +23,7 @@ const action = core.getInput('action');
  * @see https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#webhook-payload-example-48
  */
 const ghPayload: any = github.context.payload;
+const repository: any = github.context.repo;
 
 if (!action) {
   throw Error('Action is not set.');
@@ -112,7 +113,14 @@ function issueOpenedCreateCard() {
       }
 
       const markdownLink: string = `Trello card: [${createdCard.name}](${createdCard.shortUrl})`;
-      addIssueComment(markdownLink)
+      const commentData = {
+        comment: markdownLink,
+        issueNumber: issueNumber,
+        repoOwner: repository.owner,
+        repoName: repository.name,
+      };
+
+      addIssueComment(commentData)
         .then((success) => {
           if (success) {
             if (verbose) {
