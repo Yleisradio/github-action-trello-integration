@@ -515,7 +515,7 @@ function issueOpenedCreateCard() {
                 comment: markdownLink,
                 issueNumber: issueNumber,
                 repoOwner: repository.owner,
-                repoName: repository.name,
+                repoName: repository.repo,
             };
             (0, api_github_1.addIssueComment)(commentData)
                 .then((success) => {
@@ -615,7 +615,7 @@ function pullRequestEventMoveCard() {
                     comment: markdownLink,
                     pullNumber: pullNumber,
                     repoOwner: repository.owner,
-                    repoName: repository.name,
+                    repoName: repository.repo,
                 };
                 (0, api_github_1.addPullRequestComment)(commentData)
                     .then((success) => {
