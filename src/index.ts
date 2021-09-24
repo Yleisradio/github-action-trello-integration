@@ -1,5 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
+import { debug } from 'console';
+import { addIssueComment } from './api-github';
 
 import {
   getLabelsOfBoard,
@@ -9,9 +11,9 @@ import {
   updateCard,
   getCardAttachments,
   addAttachmentToCard,
-} from './api';
+} from './api-trello';
 import { TrelloCard, TrelloCardRequestParams } from './types';
-import { validateListExistsOnBoard } from './utils';
+import { cardHasPrLinked, validateListExistsOnBoard } from './utils';
 
 const verbose: string | boolean = process.env.TRELLO_ACTION_VERBOSE || false;
 const action = core.getInput('action');
@@ -22,6 +24,7 @@ const action = core.getInput('action');
  * @see https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#webhook-payload-example-48
  */
 const ghPayload: any = github.context.payload;
+const repository: any = github.context.repo;
 
 if (!action) {
   throw Error('Action is not set.');
@@ -54,6 +57,9 @@ function issueOpenedCreateCard() {
   const listId: string = process.env.TRELLO_LIST_ID as string;
   const trelloLabelIds: string[] = [];
   const memberIds: string[] = [];
+  if (verbose) {
+    console.log(JSON.stringify(repository, undefined, 2));
+  }
 
   if (!validateListExistsOnBoard(listId)) {
     core.setFailed('TRELLO_LIST_ID is not valid.');
@@ -109,12 +115,35 @@ function issueOpenedCreateCard() {
           `Card created: "[#${issueNumber}] ${issueTitle}], url ${createdCard.shortUrl}"`,
         );
       }
+
+      const markdownLink: string = `Trello card: [${createdCard.name}](${createdCard.shortUrl})`;
+      const commentData = {
+        comment: markdownLink,
+        issueNumber: issueNumber,
+        repoOwner: repository.owner,
+        repoName: repository.repo,
+      };
+
+      addIssueComment(commentData)
+        .then((success) => {
+          if (success) {
+            if (verbose) {
+              console.log(`Link to the Trello Card added to the issue: ${createdCard.shortUrl}`);
+            }
+          } else {
+            console.error(`Non-fatal error: Failed to add link to the Trello card.`);
+          }
+        })
+        .catch(() => {
+          console.error(`Non-fatal error: Failed to add link to the Trello card.`);
+        });
     });
   });
 }
 
 function pullRequestEventMoveCard() {
   const pullRequest = ghPayload.pull_request;
+  const pullNumber = pullRequest.number;
   const repoHtmlUrl = github.context.payload.repository?.html_url || 'URL missing in GH payload';
 
   const sourceList: string = process.env.TRELLO_SOURCE_LIST_ID as string;
@@ -185,32 +214,8 @@ function pullRequestEventMoveCard() {
               console.log(`Card "${card.name}" moved to board ${targetList}.`);
             }
 
-            // Check if the PR is already linked from the Card.
-            // Card has attachments and we are satisfied if the beginning of
-            // any attachment url matches the public repository URL.
-            const cardHasPrLinked = (card: TrelloCard) => {
-              return getCardAttachments(card.id).then((attachments) => {
-                if (typeof attachments === 'string') {
-                  return false;
-                }
-
-                const matchingAttachment = attachments.find((attachment) =>
-                  attachment.url.startsWith(repoHtmlUrl),
-                );
-                if (typeof matchingAttachment !== 'undefined') {
-                  if (verbose) {
-                    console.log(
-                      `Adding link (attachment) to pull request to the card "${card.name}".`,
-                    );
-                  }
-                  return true;
-                }
-                return false;
-              });
-            };
-
             // Create the backlink to PR only if it is not there yet.
-            !cardHasPrLinked(card) &&
+            !cardHasPrLinked(card, repoHtmlUrl) &&
               addAttachmentToCard(card.id, pullRequest?.html_url || '').then((attachment) => {
                 if (typeof attachment === 'string') {
                   core.setFailed(attachment);
@@ -221,6 +226,28 @@ function pullRequestEventMoveCard() {
                     `Link (attachment) to pull request URL ${attachment.url} added to the card "${card.name}".`,
                   );
                 }
+              });
+          })
+          .then(() => {
+            const markdownLink: string = `Trello card: [${card.name}](${card.shortUrl})`;
+            const commentData = {
+              comment: markdownLink,
+              issueNumber: pullNumber,
+              repoOwner: repository.owner,
+              repoName: repository.repo,
+            };
+
+            addIssueComment(commentData)
+              .then((success) => {
+                if (success) {
+                  verbose &&
+                    console.log(`Link to the Trello Card added to the PR: ${card.shortUrl}`);
+                } else {
+                  console.error(`Non-fatal error: Failed to add link to the Trello card.`);
+                }
+              })
+              .catch(() => {
+                console.error(`Non-fatal error: Failed to add link to the Trello card.`);
               });
           })
           .catch((error) => {
