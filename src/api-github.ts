@@ -4,10 +4,7 @@ import { ghIssueCommentData, ghPullRequestCommentData } from './types';
 const debug: string | boolean = process.env.GITHUB_API_DEBUG || true;
 const githubToken: string | undefined = process.env.GITHUB_TOKEN;
 const octokit = githubToken && github.getOctokit(githubToken);
-if (debug) {
-  console.log(typeof octokit);
-  console.log(JSON.stringify(octokit, undefined, 2));
-}
+
 /**
  * Add comment to issue discussion (link to trello board)
  */
@@ -22,6 +19,7 @@ const addIssueComment = async ({
     !githubToken && console.error('GITHUB_TOKEN is falsy.');
     return false;
   }
+
   if (debug) {
     console.debug('GH api / addIssueComment', {
       issueNumber: issueNumber,
@@ -36,7 +34,9 @@ const addIssueComment = async ({
     owner: repoOwner,
     repo: repoName,
   };
+
   const response = await octokit.rest.issues.createComment(commentData);
+
   if (!response) {
     console.error(`Octokit createComment() error with this issue. Data used:`, commentData);
     return false;
@@ -65,13 +65,16 @@ const addPullRequestComment = async ({
       repoName: repoName,
     });
   }
+
   const commentData = {
     body: comment,
     pull_number: pullNumber,
     owner: repoOwner,
     repo: repoName,
   };
+
   const response = await octokit.rest.pulls.createReviewComment(commentData);
+
   if (!response) {
     console.error(`Octokit addPullRequestComment() error with this issue. Data used:`, commentData);
     return false;

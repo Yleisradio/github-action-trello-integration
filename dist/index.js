@@ -40,10 +40,6 @@ const github = __importStar(__nccwpck_require__(2165));
 const debug = process.env.GITHUB_API_DEBUG || true;
 const githubToken = process.env.GITHUB_TOKEN;
 const octokit = githubToken && github.getOctokit(githubToken);
-if (debug) {
-    console.log(typeof octokit);
-    console.log(JSON.stringify(octokit, undefined, 2));
-}
 /**
  * Add comment to issue discussion (link to trello board)
  */
