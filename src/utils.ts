@@ -1,5 +1,8 @@
 import * as core from '@actions/core';
-import { getListsOnBoard } from './api-trello';
+import { getCardAttachments, getListsOnBoard } from './api-trello';
+import { TrelloCard } from './types';
+
+const verbose: string | boolean = process.env.TRELLO_ACTION_VERBOSE || false;
 
 /**
  * Validate Trello entity id.
@@ -44,4 +47,26 @@ const boardId = (): string => {
   return process.env.TRELLO_BOARD_ID as string;
 };
 
-export { validateIdPattern, validateListExistsOnBoard, boardId };
+// Check if the PR is already linked from the Card.
+// Card has attachments and we are satisfied if the beginning of
+// any attachment url matches the public repository URL.
+const cardHasPrLinked = (card: TrelloCard, repoHtmlUrl: string) => {
+  return getCardAttachments(card.id).then((attachments) => {
+    if (typeof attachments === 'string') {
+      return false;
+    }
+
+    const matchingAttachment = attachments.find((attachment) =>
+      attachment.url.startsWith(repoHtmlUrl),
+    );
+    if (typeof matchingAttachment !== 'undefined') {
+      if (verbose) {
+        console.log(`Adding link (attachment) to pull request to the card "${card.name}".`);
+      }
+      return true;
+    }
+    return false;
+  });
+};
+
+export { validateIdPattern, validateListExistsOnBoard, boardId, cardHasPrLinked };

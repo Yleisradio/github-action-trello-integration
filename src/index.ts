@@ -12,7 +12,7 @@ import {
   addAttachmentToCard,
 } from './api-trello';
 import { TrelloCard, TrelloCardRequestParams } from './types';
-import { validateListExistsOnBoard } from './utils';
+import { cardHasPrLinked, validateListExistsOnBoard } from './utils';
 
 const verbose: string | boolean = process.env.TRELLO_ACTION_VERBOSE || false;
 const action = core.getInput('action');
@@ -209,32 +209,8 @@ function pullRequestEventMoveCard() {
               console.log(`Card "${card.name}" moved to board ${targetList}.`);
             }
 
-            // Check if the PR is already linked from the Card.
-            // Card has attachments and we are satisfied if the beginning of
-            // any attachment url matches the public repository URL.
-            const cardHasPrLinked = (card: TrelloCard) => {
-              return getCardAttachments(card.id).then((attachments) => {
-                if (typeof attachments === 'string') {
-                  return false;
-                }
-
-                const matchingAttachment = attachments.find((attachment) =>
-                  attachment.url.startsWith(repoHtmlUrl),
-                );
-                if (typeof matchingAttachment !== 'undefined') {
-                  if (verbose) {
-                    console.log(
-                      `Adding link (attachment) to pull request to the card "${card.name}".`,
-                    );
-                  }
-                  return true;
-                }
-                return false;
-              });
-            };
-
             // Create the backlink to PR only if it is not there yet.
-            !cardHasPrLinked(card) &&
+            !cardHasPrLinked(card, repoHtmlUrl) &&
               addAttachmentToCard(card.id, pullRequest?.html_url || '').then((attachment) => {
                 if (typeof attachment === 'string') {
                   core.setFailed(attachment);
