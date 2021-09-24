@@ -74,9 +74,13 @@ const addPullRequestComment = async ({
     repo: repoName,
   };
 
-  const response = await octokit.rest.pulls.createReviewComment(commentData);
   if (debug) {
     console.log('commentData:', JSON.stringify(commentData, undefined, 2));
+  }
+
+  const response = await octokit.rest.pulls.createReviewComment(commentData);
+
+  if (debug) {
     console.log('response: ', typeof response, ' ', JSON.stringify(response, undefined, 2));
   }
   if (!response) {

@@ -232,12 +232,12 @@ function pullRequestEventMoveCard() {
             const markdownLink: string = `Trello card: [${card.name}](${card.shortUrl})`;
             const commentData = {
               comment: markdownLink,
-              pullNumber: pullNumber,
+              issueNumber: pullNumber,
               repoOwner: repository.owner,
               repoName: repository.repo,
             };
 
-            addPullRequestComment(commentData)
+            addIssueComment(commentData)
               .then((success) => {
                 if (success) {
                   verbose &&

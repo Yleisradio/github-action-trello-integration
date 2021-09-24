@@ -92,9 +92,11 @@ const addPullRequestComment = ({ comment, pullNumber, repoOwner, repoName, }) =>
         owner: repoOwner,
         repo: repoName,
     };
-    const response = yield octokit.rest.pulls.createReviewComment(commentData);
     if (debug) {
         console.log('commentData:', JSON.stringify(commentData, undefined, 2));
+    }
+    const response = yield octokit.rest.pulls.createReviewComment(commentData);
+    if (debug) {
         console.log('response: ', typeof response, ' ', JSON.stringify(response, undefined, 2));
     }
     if (!response) {
@@ -614,11 +616,11 @@ function pullRequestEventMoveCard() {
                 const markdownLink = `Trello card: [${card.name}](${card.shortUrl})`;
                 const commentData = {
                     comment: markdownLink,
-                    pullNumber: pullNumber,
+                    issueNumber: pullNumber,
                     repoOwner: repository.owner,
                     repoName: repository.repo,
                 };
-                (0, api_github_1.addPullRequestComment)(commentData)
+                (0, api_github_1.addIssueComment)(commentData)
                     .then((success) => {
                     if (success) {
                         verbose &&
