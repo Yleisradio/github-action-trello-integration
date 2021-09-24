@@ -29,10 +29,11 @@ jobs:
     name: Create Trello Card
     steps:
       - name: Call trello-github-actions
-        uses: Yleisradio/github-action-trello-integration@v1.0.1
+        uses: Yleisradio/github-action-trello-integration@v1.1.0
         with:
           action: issue_opened_create_card
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
           TRELLO_API_TOKEN: ${{ secrets.TRELLO_API_TOKEN }}
           # TRELLO_BOARD_ID must match a board. GH repo should connect
@@ -45,6 +46,7 @@ jobs:
 
 Required env variables include:
 
+- `GITHUB_TOKEN` Github secret. This is necessary so the action can put a link to Trello Card to the issue (as a comment).
 - `TRELLO_API_KEY` Trello API key. Use it via Github repository or organisation secrets. Do not store in your repository code.
 - `TRELLO_API_TOKEN` Trello API token. Use it via Github repository or organisation secrets. Do not store in your repository code.
 - `TRELLO_BOARD_ID` The id of your Trello board.
@@ -54,6 +56,7 @@ Optional env variables include:
 
 - `TRELLO_ACTION_VERBOSE` to make action logs slightly more verbose.
 - `TRELLO_API_DEBUG` expose all API call resposes in action log.
+- `GITHUB_API_DEBUG` expose API call data in action log.
 
 ### Pull requests and Cards referring to PR or issue
 
@@ -76,10 +79,11 @@ jobs:
     steps:
       - name: Call trello-github-actions
         id: call-trello-github-actions
-        uses: Yleisradio/github-action-trello-integration@v1.0.1
+        uses: Yleisradio/github-action-trello-integration@v1.1.0
         with:
           action: pull_request_event_move_card
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
           TRELLO_API_TOKEN: ${{ secrets.TRELLO_API_TOKEN }}
           TRELLO_BOARD_ID: BOARD-24-CHAR-LONG-ID
@@ -91,6 +95,7 @@ jobs:
 
 Required env variables include:
 
+- `GITHUB_TOKEN` Github secret. This is necessary so the action can put a link to Trello Card to the pull request (as a comment).
 - `TRELLO_API_KEY` Trello API key. Use it via Github repository or organisation secrets. Do not store in your repository code.
 - `TRELLO_API_TOKEN` Trello API token. Use it via Github repository or organisation secrets. Do not store in your repository code.
 - `TRELLO_BOARD_ID` The id of your Trello board.
@@ -101,6 +106,7 @@ Optional env variables include:
 - `TRELLO_SOURCE_LIST_ID` The id of your Trello list (column) where you wish to limit searching the Card.
 - `TRELLO_ACTION_VERBOSE` to make action logs slightly more verbose.
 - `TRELLO_API_DEBUG` expose all API call resposes in action log.
+- `GITHUB_API_DEBUG` expose API call data in action log.
 
 ## API key and token
 
