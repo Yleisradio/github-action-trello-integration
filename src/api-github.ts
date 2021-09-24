@@ -6,7 +6,12 @@ const githubToken: string | undefined = process.env.GITHUB_TOKEN;
 const octokit = githubToken && github.getOctokit(githubToken);
 
 /**
- * Add comment to issue discussion (link to trello board)
+ * Add comment to issue discussion (link to trello board).
+ *
+ * PRs do not have their own endpoint for the same feature but this one is used for them as well.
+ * @see https://octokit.github.io/rest.js/v18#issues-create-comment
+ * @see https://octokit.github.io/rest.js/v18#pulls-create-review-comment
+ *
  */
 const addIssueComment = async ({
   comment,
@@ -45,50 +50,4 @@ const addIssueComment = async ({
   return true;
 };
 
-/**
- * Add comment to PR discussion (link to trello board)
- */
-const addPullRequestComment = async ({
-  comment,
-  pullNumber,
-  repoOwner,
-  repoName,
-}: ghPullRequestCommentData): Promise<boolean> => {
-  if (!octokit) {
-    console.error('Octokit is not defined.');
-    !githubToken && console.error('GITHUB_TOKEN is falsy.');
-    return false;
-  }
-  if (debug) {
-    console.debug('GH api / addPullRequestComment', {
-      pullNumber: pullNumber,
-      repoOwner: repoOwner,
-      repoName: repoName,
-    });
-  }
-
-  const commentData = {
-    body: comment,
-    pull_number: pullNumber,
-    owner: repoOwner,
-    repo: repoName,
-  };
-
-  if (debug) {
-    console.log('commentData:', JSON.stringify(commentData, undefined, 2));
-  }
-
-  const response = await octokit.rest.pulls.createReviewComment(commentData);
-
-  if (debug) {
-    console.log('response: ', typeof response, ' ', JSON.stringify(response, undefined, 2));
-  }
-  if (!response) {
-    console.error(`Octokit addPullRequestComment() error with this issue. Data used:`, commentData);
-    return false;
-  }
-
-  return true;
-};
-
-export { addIssueComment, addPullRequestComment };
+export { addIssueComment };

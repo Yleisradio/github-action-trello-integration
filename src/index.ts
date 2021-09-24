@@ -1,7 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import { debug } from 'console';
-import { addIssueComment, addPullRequestComment } from './api-github';
+import { addIssueComment } from './api-github';
 
 import {
   getLabelsOfBoard,

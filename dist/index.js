@@ -35,13 +35,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.addPullRequestComment = exports.addIssueComment = void 0;
+exports.addIssueComment = void 0;
 const github = __importStar(__nccwpck_require__(2165));
 const debug = process.env.GITHUB_API_DEBUG || true;
 const githubToken = process.env.GITHUB_TOKEN;
 const octokit = githubToken && github.getOctokit(githubToken);
 /**
- * Add comment to issue discussion (link to trello board)
+ * Add comment to issue discussion (link to trello board).
+ *
+ * PRs do not have their own endpoint for the same feature but this one is used for them as well.
+ * @see https://octokit.github.io/rest.js/v18#issues-create-comment
+ * @see https://octokit.github.io/rest.js/v18#pulls-create-review-comment
+ *
  */
 const addIssueComment = ({ comment, issueNumber, repoOwner, repoName, }) => __awaiter(void 0, void 0, void 0, function* () {
     if (!octokit) {
@@ -70,42 +75,6 @@ const addIssueComment = ({ comment, issueNumber, repoOwner, repoName, }) => __aw
     return true;
 });
 exports.addIssueComment = addIssueComment;
-/**
- * Add comment to PR discussion (link to trello board)
- */
-const addPullRequestComment = ({ comment, pullNumber, repoOwner, repoName, }) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!octokit) {
-        console.error('Octokit is not defined.');
-        !githubToken && console.error('GITHUB_TOKEN is falsy.');
-        return false;
-    }
-    if (debug) {
-        console.debug('GH api / addPullRequestComment', {
-            pullNumber: pullNumber,
-            repoOwner: repoOwner,
-            repoName: repoName,
-        });
-    }
-    const commentData = {
-        body: comment,
-        pull_number: pullNumber,
-        owner: repoOwner,
-        repo: repoName,
-    };
-    if (debug) {
-        console.log('commentData:', JSON.stringify(commentData, undefined, 2));
-    }
-    const response = yield octokit.rest.pulls.createReviewComment(commentData);
-    if (debug) {
-        console.log('response: ', typeof response, ' ', JSON.stringify(response, undefined, 2));
-    }
-    if (!response) {
-        console.error(`Octokit addPullRequestComment() error with this issue. Data used:`, commentData);
-        return false;
-    }
-    return true;
-});
-exports.addPullRequestComment = addPullRequestComment;
 //# sourceMappingURL=api-github.js.map
 
 /***/ }),
