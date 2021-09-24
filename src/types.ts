@@ -121,9 +121,9 @@ interface TrelloCardRequestParams {
 
 interface ghIssueCommentData {
   comment: string;
-  issueNumber: number | undefined;
-  repoOwner: string | undefined;
-  repoName: string | undefined;
+  issueNumber: number;
+  repoOwner: string;
+  repoName: string;
 }
 
 export {
