@@ -4,7 +4,10 @@ import { ghIssueCommentData, ghPullRequestCommentData } from './types';
 const debug: string | boolean = process.env.GITHUB_API_DEBUG || true;
 const githubToken: string | undefined = process.env.GITHUB_TOKEN;
 const octokit = githubToken && github.getOctokit(githubToken);
-
+if (debug) {
+  console.log(typeof octokit);
+  console.log(JSON.stringify(octokit, undefined, 2));
+}
 /**
  * Add comment to issue discussion (link to trello board)
  */
@@ -15,7 +18,8 @@ const addIssueComment = async ({
   repoName,
 }: ghIssueCommentData): Promise<boolean> => {
   if (!octokit) {
-    console.error('Octokit is not defined. Maybe GITHUB_TOKEN is not present or valid.');
+    console.error('Octokit is not defined.');
+    !githubToken && console.error('GITHUB_TOKEN is falsy.');
     return false;
   }
   if (debug) {
