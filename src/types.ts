@@ -119,17 +119,16 @@ interface TrelloCardRequestParams {
   destinationListId?: string;
 }
 
-interface ghIssueCommentData {
+interface ghCommentData {
   comment: string;
-  issueNumber: number;
   repoOwner: string;
   repoName: string;
 }
-interface ghPullRequestCommentData {
-  comment: string;
+interface ghIssueCommentData extends ghCommentData {
+  issueNumber: number;
+}
+interface ghPullRequestCommentData extends ghCommentData {
   pullNumber: number;
-  repoOwner: string;
-  repoName: string;
 }
 
 export {
