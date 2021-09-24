@@ -9,7 +9,7 @@ import {
   updateCard,
   getCardAttachments,
   addAttachmentToCard,
-} from './api';
+} from './api-trello';
 import { TrelloCard, TrelloCardRequestParams } from './types';
 import { validateListExistsOnBoard } from './utils';
 

@@ -1,5 +1,5 @@
 import * as core from '@actions/core';
-import { getListsOnBoard } from './api';
+import { getListsOnBoard } from './api-trello';
 
 /**
  * Validate Trello entity id.
