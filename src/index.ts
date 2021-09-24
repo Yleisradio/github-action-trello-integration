@@ -121,7 +121,7 @@ function issueOpenedCreateCard() {
         comment: markdownLink,
         issueNumber: issueNumber,
         repoOwner: repository.owner,
-        repoName: repository.name,
+        repoName: repository.repo,
       };
 
       addIssueComment(commentData)
@@ -234,7 +234,7 @@ function pullRequestEventMoveCard() {
               comment: markdownLink,
               pullNumber: pullNumber,
               repoOwner: repository.owner,
-              repoName: repository.name,
+              repoName: repository.repo,
             };
 
             addPullRequestComment(commentData)
