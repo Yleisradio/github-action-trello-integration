@@ -1,7 +1,108 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 454:
+/***/ 1899:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.addPullRequestComment = exports.addIssueComment = void 0;
+const github = __importStar(__nccwpck_require__(6330));
+const debug = process.env.GITHUB_API_DEBUG || true;
+const githubToken = process.env.GITHUB_TOKEN;
+const octokit = githubToken && github.getOctokit(githubToken);
+/**
+ * Add comment to issue discussion (link to trello board)
+ */
+const addIssueComment = ({ comment, issueNumber, repoOwner, repoName, }) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!octokit) {
+        console.error('Octokit is not defined. Maybe GITHUB_TOKEN is not present or valid.');
+        return false;
+    }
+    if (debug) {
+        console.debug('GH api / addIssueComment', {
+            issueNumber: issueNumber,
+            repoOwner: repoOwner,
+            repoName: repoName,
+        });
+    }
+    const commentData = {
+        body: comment,
+        issue_number: issueNumber,
+        owner: repoOwner,
+        repo: repoName,
+    };
+    const response = yield octokit.rest.issues.createComment(commentData);
+    if (!response) {
+        console.error(`Octokit createComment() error with this issue. Data used:`, commentData);
+        return false;
+    }
+    return true;
+});
+exports.addIssueComment = addIssueComment;
+/**
+ * Add comment to PR discussion (link to trello board)
+ */
+const addPullRequestComment = ({ comment, pullNumber, repoOwner, repoName, }) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!octokit) {
+        console.error('Octokit is not defined. Maybe GITHUB_TOKEN is not present or valid.');
+        return false;
+    }
+    if (debug) {
+        console.debug('GH api / addPullRequestComment', {
+            pullNumber: pullNumber,
+            repoOwner: repoOwner,
+            repoName: repoName,
+        });
+    }
+    const commentData = {
+        body: comment,
+        pull_number: pullNumber,
+        owner: repoOwner,
+        repo: repoName,
+    };
+    const response = yield octokit.rest.pulls.createReviewComment(commentData);
+    if (!response) {
+        console.error(`Octokit addPullRequestComment() error with this issue. Data used:`, commentData);
+        return false;
+    }
+    return true;
+});
+exports.addPullRequestComment = addPullRequestComment;
+//# sourceMappingURL=api-github.js.map
+
+/***/ }),
+
+/***/ 9748:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -284,7 +385,7 @@ function addAttachmentToCard(cardId, url) {
         .catch((error) => error);
 }
 exports.addAttachmentToCard = addAttachmentToCard;
-//# sourceMappingURL=api.js.map
+//# sourceMappingURL=api-trello.js.map
 
 /***/ }),
 
@@ -315,7 +416,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2669));
 const github = __importStar(__nccwpck_require__(6330));
-const api_1 = __nccwpck_require__(454);
+const api_github_1 = __nccwpck_require__(1899);
+const api_trello_1 = __nccwpck_require__(9748);
 const utils_1 = __nccwpck_require__(254);
 const verbose = process.env.TRELLO_ACTION_VERBOSE || false;
 const action = core.getInput('action');
@@ -325,6 +427,7 @@ const action = core.getInput('action');
  * @see https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#webhook-payload-example-48
  */
 const ghPayload = github.context.payload;
+const repository = github.context.repo;
 if (!action) {
     throw Error('Action is not set.');
 }
@@ -358,7 +461,7 @@ function issueOpenedCreateCard() {
         core.setFailed('TRELLO_LIST_ID is not valid.');
         return;
     }
-    const getLabels = (0, api_1.getLabelsOfBoard)().then((trelloLabels) => {
+    const getLabels = (0, api_trello_1.getLabelsOfBoard)().then((trelloLabels) => {
         if (typeof trelloLabels === 'string') {
             core.setFailed(trelloLabels);
             return;
@@ -367,7 +470,7 @@ function issueOpenedCreateCard() {
         const matchingLabelIds = intersection.map((trelloLabel) => trelloLabel.id);
         trelloLabelIds.push(...matchingLabelIds);
     });
-    const getMembers = (0, api_1.getMembersOfBoard)().then((trelloMembers) => {
+    const getMembers = (0, api_trello_1.getMembersOfBoard)().then((trelloMembers) => {
         if (typeof trelloMembers === 'string') {
             core.setFailed(trelloMembers);
             return;
@@ -391,7 +494,7 @@ function issueOpenedCreateCard() {
         // No need to create the attachment for this repository separately since the createCard()
         // adds the backlink to the created issue, see
         // params.sourceUrl property.
-        (0, api_1.createCard)(listId, params).then((createdCard) => {
+        (0, api_trello_1.createCard)(listId, params).then((createdCard) => {
             if (typeof createdCard === 'string') {
                 core.setFailed(createdCard);
                 return;
@@ -399,12 +502,34 @@ function issueOpenedCreateCard() {
             if (verbose) {
                 console.log(`Card created: "[#${issueNumber}] ${issueTitle}], url ${createdCard.shortUrl}"`);
             }
+            const markdownLink = `Trello card: [${createdCard.name}](${createdCard.shortUrl})`;
+            const commentData = {
+                comment: markdownLink,
+                issueNumber: issueNumber,
+                repoOwner: repository.owner,
+                repoName: repository.name,
+            };
+            (0, api_github_1.addIssueComment)(commentData)
+                .then((success) => {
+                if (success) {
+                    if (verbose) {
+                        console.log(`Link to the Trello Card added to the issue: ${createdCard.shortUrl}`);
+                    }
+                }
+                else {
+                    console.error(`Non-fatal error: Failed to add link to the Trello card.`);
+                }
+            })
+                .catch(() => {
+                console.error(`Non-fatal error: Failed to add link to the Trello card.`);
+            });
         });
     });
 }
 function pullRequestEventMoveCard() {
     var _a;
     const pullRequest = ghPayload.pull_request;
+    const pullNumber = pullRequest.number;
     const repoHtmlUrl = ((_a = github.context.payload.repository) === null || _a === void 0 ? void 0 : _a.html_url) || 'URL missing in GH payload';
     const sourceList = process.env.TRELLO_SOURCE_LIST_ID;
     const targetList = process.env.TRELLO_TARGET_LIST_ID;
@@ -417,7 +542,7 @@ function pullRequestEventMoveCard() {
     }
     // TODO: Allow unspecified target as well so that - say - PR moves card to "Ready for review"
     // list regardless of where it is currently.
-    (0, api_1.getCardsOfListOrBoard)(sourceList)
+    (0, api_trello_1.getCardsOfListOrBoard)(sourceList)
         .then((cardsOnList) => {
         var _a;
         // Filter cards to those which refer to the Github Issues mentioned in the PR.
@@ -436,7 +561,7 @@ function pullRequestEventMoveCard() {
             .filter((card) => {
             // Filter cards to those which refer to the Github repository via any attachment.
             // Note that link in card.desc is not satisfactory.
-            return (0, api_1.getCardAttachments)(card.id).then((attachments) => {
+            return (0, api_trello_1.getCardAttachments)(card.id).then((attachments) => {
                 if (typeof attachments === 'string') {
                     return false;
                 }
@@ -455,7 +580,7 @@ function pullRequestEventMoveCard() {
             if (verbose) {
                 console.log(`Moving card "${card.name}" to board to ${targetList}.`);
             }
-            (0, api_1.updateCard)(card.id, params)
+            (0, api_trello_1.updateCard)(card.id, params)
                 .then((trelloCard) => {
                 if (typeof trelloCard === 'string') {
                     core.setFailed(trelloCard);
@@ -464,27 +589,9 @@ function pullRequestEventMoveCard() {
                 if (verbose) {
                     console.log(`Card "${card.name}" moved to board ${targetList}.`);
                 }
-                // Check if the PR is already linked from the Card.
-                // Card has attachments and we are satisfied if the beginning of
-                // any attachment url matches the public repository URL.
-                const cardHasPrLinked = (card) => {
-                    return (0, api_1.getCardAttachments)(card.id).then((attachments) => {
-                        if (typeof attachments === 'string') {
-                            return false;
-                        }
-                        const matchingAttachment = attachments.find((attachment) => attachment.url.startsWith(repoHtmlUrl));
-                        if (typeof matchingAttachment !== 'undefined') {
-                            if (verbose) {
-                                console.log(`Adding link (attachment) to pull request to the card "${card.name}".`);
-                            }
-                            return true;
-                        }
-                        return false;
-                    });
-                };
                 // Create the backlink to PR only if it is not there yet.
-                !cardHasPrLinked(card) &&
-                    (0, api_1.addAttachmentToCard)(card.id, (pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.html_url) || '').then((attachment) => {
+                !(0, utils_1.cardHasPrLinked)(card, repoHtmlUrl) &&
+                    (0, api_trello_1.addAttachmentToCard)(card.id, (pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.html_url) || '').then((attachment) => {
                         if (typeof attachment === 'string') {
                             core.setFailed(attachment);
                             return;
@@ -493,6 +600,29 @@ function pullRequestEventMoveCard() {
                             console.log(`Link (attachment) to pull request URL ${attachment.url} added to the card "${card.name}".`);
                         }
                     });
+            })
+                .then(() => {
+                const markdownLink = `Trello card: [${card.name}](${card.shortUrl})`;
+                const commentData = {
+                    comment: markdownLink,
+                    pullNumber: pullNumber,
+                    repoOwner: repository.owner,
+                    repoName: repository.name,
+                };
+                (0, api_github_1.addPullRequestComment)(commentData)
+                    .then((success) => {
+                    if (success) {
+                        if (verbose) {
+                            console.log(`Link to the Trello Card added to the PR: ${card.shortUrl}`);
+                        }
+                    }
+                    else {
+                        console.error(`Non-fatal error: Failed to add link to the Trello card.`);
+                    }
+                })
+                    .catch(() => {
+                    console.error(`Non-fatal error: Failed to add link to the Trello card.`);
+                });
             })
                 .catch((error) => {
                 console.error(error);
@@ -531,9 +661,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.boardId = exports.validateListExistsOnBoard = exports.validateIdPattern = void 0;
+exports.cardHasPrLinked = exports.boardId = exports.validateListExistsOnBoard = exports.validateIdPattern = void 0;
 const core = __importStar(__nccwpck_require__(2669));
-const api_1 = __nccwpck_require__(454);
+const api_trello_1 = __nccwpck_require__(9748);
+const verbose = process.env.TRELLO_ACTION_VERBOSE || false;
 /**
  * Validate Trello entity id.
  *
@@ -559,7 +690,7 @@ const validateListExistsOnBoard = (listId) => {
     if (!validateIdPattern(listId)) {
         return false;
     }
-    return (0, api_1.getListsOnBoard)().then((listsFromApi) => {
+    return (0, api_trello_1.getListsOnBoard)().then((listsFromApi) => {
         if (typeof listsFromApi === 'string') {
             core.setFailed(listsFromApi);
             return false;
@@ -577,6 +708,25 @@ const boardId = () => {
     return process.env.TRELLO_BOARD_ID;
 };
 exports.boardId = boardId;
+// Check if the PR is already linked from the Card.
+// Card has attachments and we are satisfied if the beginning of
+// any attachment url matches the public repository URL.
+const cardHasPrLinked = (card, repoHtmlUrl) => {
+    return (0, api_trello_1.getCardAttachments)(card.id).then((attachments) => {
+        if (typeof attachments === 'string') {
+            return false;
+        }
+        const matchingAttachment = attachments.find((attachment) => attachment.url.startsWith(repoHtmlUrl));
+        if (typeof matchingAttachment !== 'undefined') {
+            if (verbose) {
+                console.log(`Adding link (attachment) to pull request to the card "${card.name}".`);
+            }
+            return true;
+        }
+        return false;
+    });
+};
+exports.cardHasPrLinked = cardHasPrLinked;
 //# sourceMappingURL=utils.js.map
 
 /***/ }),
