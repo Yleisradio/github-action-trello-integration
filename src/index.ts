@@ -110,7 +110,9 @@ function issueOpenedCreateCard() {
           `Card created: "[#${issueNumber}] ${issueTitle}], url ${createdCard.shortUrl}"`,
         );
       }
-      addIssueComment(createdCard.shortUrl)
+
+      const markdownLink: string = `Trello card: [${createdCard.name}](${createdCard.shortUrl})`;
+      addIssueComment(markdownLink)
         .then((success) => {
           if (success) {
             if (verbose) {
