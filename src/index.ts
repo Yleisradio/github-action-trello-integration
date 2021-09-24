@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { addIssueComment } from './api-github';
+import { addIssueComment, addPullRequestComment } from './api-github';
 
 import {
   getLabelsOfBoard,
@@ -139,6 +139,7 @@ function issueOpenedCreateCard() {
 
 function pullRequestEventMoveCard() {
   const pullRequest = ghPayload.pull_request;
+  const pullNumber = pullRequest.number;
   const repoHtmlUrl = github.context.payload.repository?.html_url || 'URL missing in GH payload';
 
   const sourceList: string = process.env.TRELLO_SOURCE_LIST_ID as string;
@@ -221,6 +222,29 @@ function pullRequestEventMoveCard() {
                     `Link (attachment) to pull request URL ${attachment.url} added to the card "${card.name}".`,
                   );
                 }
+              });
+          })
+          .then(() => {
+            const markdownLink: string = `Trello card: [${card.name}](${card.shortUrl})`;
+            const commentData = {
+              comment: markdownLink,
+              pullNumber: pullNumber,
+              repoOwner: repository.owner,
+              repoName: repository.name,
+            };
+
+            addPullRequestComment(commentData)
+              .then((success) => {
+                if (success) {
+                  if (verbose) {
+                    console.log(`Link to the Trello Card added to the PR: ${card.shortUrl}`);
+                  }
+                } else {
+                  console.error(`Non-fatal error: Failed to add link to the Trello card.`);
+                }
+              })
+              .catch(() => {
+                console.error(`Non-fatal error: Failed to add link to the Trello card.`);
               });
           })
           .catch((error) => {
