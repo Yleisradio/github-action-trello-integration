@@ -59,11 +59,12 @@ const cardHasPrLinked = (card: TrelloCard, repoHtmlUrl: string) => {
     const matchingAttachment = attachments.find((attachment) =>
       attachment.url.startsWith(repoHtmlUrl),
     );
+    // One or more attachments is already linking to PR.
     if (typeof matchingAttachment !== 'undefined') {
-      if (verbose) {
-        console.log(`Adding link (attachment) to pull request to the card "${card.name}".`);
-      }
       return true;
+    }
+    if (verbose) {
+      console.log(`Adding link (attachment) to pull request to the card "${card.name}".`);
     }
     return false;
   });

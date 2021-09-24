@@ -240,9 +240,8 @@ function pullRequestEventMoveCard() {
             addPullRequestComment(commentData)
               .then((success) => {
                 if (success) {
-                  if (verbose) {
+                  verbose &&
                     console.log(`Link to the Trello Card added to the PR: ${card.shortUrl}`);
-                  }
                 } else {
                   console.error(`Non-fatal error: Failed to add link to the Trello card.`);
                 }

@@ -55,7 +55,8 @@ const addPullRequestComment = async ({
   repoName,
 }: ghPullRequestCommentData): Promise<boolean> => {
   if (!octokit) {
-    console.error('Octokit is not defined. Maybe GITHUB_TOKEN is not present or valid.');
+    console.error('Octokit is not defined.');
+    !githubToken && console.error('GITHUB_TOKEN is falsy.');
     return false;
   }
   if (debug) {
@@ -74,7 +75,10 @@ const addPullRequestComment = async ({
   };
 
   const response = await octokit.rest.pulls.createReviewComment(commentData);
-
+  if (debug) {
+    console.log('commentData:', JSON.stringify(commentData, undefined, 2));
+    console.log('response: ', typeof response, ' ', JSON.stringify(response, undefined, 2));
+  }
   if (!response) {
     console.error(`Octokit addPullRequestComment() error with this issue. Data used:`, commentData);
     return false;

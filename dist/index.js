@@ -75,7 +75,8 @@ exports.addIssueComment = addIssueComment;
  */
 const addPullRequestComment = ({ comment, pullNumber, repoOwner, repoName, }) => __awaiter(void 0, void 0, void 0, function* () {
     if (!octokit) {
-        console.error('Octokit is not defined. Maybe GITHUB_TOKEN is not present or valid.');
+        console.error('Octokit is not defined.');
+        !githubToken && console.error('GITHUB_TOKEN is falsy.');
         return false;
     }
     if (debug) {
@@ -92,6 +93,10 @@ const addPullRequestComment = ({ comment, pullNumber, repoOwner, repoName, }) =>
         repo: repoName,
     };
     const response = yield octokit.rest.pulls.createReviewComment(commentData);
+    if (debug) {
+        console.log('commentData:', JSON.stringify(commentData, undefined, 2));
+        console.log('response: ', typeof response, ' ', JSON.stringify(response, undefined, 2));
+    }
     if (!response) {
         console.error(`Octokit addPullRequestComment() error with this issue. Data used:`, commentData);
         return false;
@@ -616,9 +621,8 @@ function pullRequestEventMoveCard() {
                 (0, api_github_1.addPullRequestComment)(commentData)
                     .then((success) => {
                     if (success) {
-                        if (verbose) {
+                        verbose &&
                             console.log(`Link to the Trello Card added to the PR: ${card.shortUrl}`);
-                        }
                     }
                     else {
                         console.error(`Non-fatal error: Failed to add link to the Trello card.`);
@@ -721,11 +725,12 @@ const cardHasPrLinked = (card, repoHtmlUrl) => {
             return false;
         }
         const matchingAttachment = attachments.find((attachment) => attachment.url.startsWith(repoHtmlUrl));
+        // One or more attachments is already linking to PR.
         if (typeof matchingAttachment !== 'undefined') {
-            if (verbose) {
-                console.log(`Adding link (attachment) to pull request to the card "${card.name}".`);
-            }
             return true;
+        }
+        if (verbose) {
+            console.log(`Adding link (attachment) to pull request to the card "${card.name}".`);
         }
         return false;
     });
