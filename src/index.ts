@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
+import { addIssueComment } from './api-github';
 
 import {
   getLabelsOfBoard,
@@ -109,6 +110,19 @@ function issueOpenedCreateCard() {
           `Card created: "[#${issueNumber}] ${issueTitle}], url ${createdCard.shortUrl}"`,
         );
       }
+      addIssueComment(createdCard.shortUrl)
+        .then((success) => {
+          if (success) {
+            if (verbose) {
+              console.log(`Link to the Trello Card added to the issue: ${createdCard.shortUrl}`);
+            }
+          } else {
+            console.error(`Non-fatal error: Failed to add link to the Trello card.`);
+          }
+        })
+        .catch(() => {
+          console.error(`Non-fatal error: Failed to add link to the Trello card.`);
+        });
     });
   });
 }
