@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
+import { debug } from 'console';
 import { addIssueComment, addPullRequestComment } from './api-github';
 
 import {
@@ -56,6 +57,9 @@ function issueOpenedCreateCard() {
   const listId: string = process.env.TRELLO_LIST_ID as string;
   const trelloLabelIds: string[] = [];
   const memberIds: string[] = [];
+  if (verbose) {
+    console.log(JSON.stringify(repository, undefined, 2));
+  }
 
   if (!validateListExistsOnBoard(listId)) {
     core.setFailed('TRELLO_LIST_ID is not valid.');

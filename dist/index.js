@@ -462,6 +462,9 @@ function issueOpenedCreateCard() {
     const listId = process.env.TRELLO_LIST_ID;
     const trelloLabelIds = [];
     const memberIds = [];
+    if (verbose) {
+        console.log(JSON.stringify(repository, undefined, 2));
+    }
     if (!(0, utils_1.validateListExistsOnBoard)(listId)) {
         core.setFailed('TRELLO_LIST_ID is not valid.');
         return;
