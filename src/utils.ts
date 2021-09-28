@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
+import { getAllIssueComments } from './api-github';
 import { getCardAttachments, getListsOnBoard } from './api-trello';
-import { TrelloCard } from './types';
+import { ghIssueData, TrelloCard } from './types';
 
 const verbose: string | boolean = process.env.TRELLO_ACTION_VERBOSE || false;
 
@@ -70,4 +71,33 @@ const cardHasPrLinked = (card: TrelloCard, repoHtmlUrl: string) => {
   });
 };
 
-export { validateIdPattern, validateListExistsOnBoard, boardId, cardHasPrLinked };
+const isIssueAlreadyLinkedTo = (
+  findme: string,
+  { issueNumber, repoOwner, repoName }: ghIssueData,
+): Promise<boolean | void> => {
+  return getAllIssueComments({ issueNumber: issueNumber, repoOwner: repoOwner, repoName: repoName })
+    .then((comments) => {
+      if (!comments || !comments.length) {
+        return undefined;
+      }
+      // TEMP for debugging.
+      return undefined;
+      // return comments.some((comment) => comment.body && comment.body.match(findme));
+    })
+    .then((matcher) => {
+      return matcher === undefined;
+    })
+    .catch((error) => {
+      console.error(
+        'Error locating the provided string in issue/pr comments: ' +
+          JSON.stringify(error, null, 2),
+      );
+    });
+};
+export {
+  validateIdPattern,
+  validateListExistsOnBoard,
+  boardId,
+  cardHasPrLinked,
+  isIssueAlreadyLinkedTo,
+};
