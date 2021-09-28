@@ -35,7 +35,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.addIssueComment = void 0;
+exports.getAllIssueComments = exports.addIssueComment = void 0;
 const github = __importStar(__nccwpck_require__(2165));
 const debug = process.env.GITHUB_API_DEBUG || true;
 const githubToken = process.env.GITHUB_TOKEN;
@@ -75,6 +75,29 @@ const addIssueComment = ({ comment, issueNumber, repoOwner, repoName, }) => __aw
     return true;
 });
 exports.addIssueComment = addIssueComment;
+/**
+ * REST endpint to get all Issue (or PR) comments.
+ *
+ * @see https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository
+ */
+const getAllIssueComments = ({ issueNumber, repoOwner, repoName }) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!octokit) {
+        console.error('Octokit is not defined.');
+        !githubToken && console.error('GITHUB_TOKEN is falsy.');
+        return [];
+    }
+    const ghIssueData = {
+        owner: repoOwner,
+        repo: repoName,
+        issue_number: issueNumber,
+    };
+    // https://docs.github.com/en/rest/reference/issues#list-issue-comments
+    const issueComments = yield octokit.rest.issues.listComments(ghIssueData);
+    console.log(`getAllIssueComments with issue ${issueNumber}: `);
+    console.log(JSON.stringify(issueComments, null, 2));
+    return issueComments;
+});
+exports.getAllIssueComments = getAllIssueComments;
 //# sourceMappingURL=api-github.js.map
 
 /***/ }),
@@ -390,6 +413,17 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(3020));
 const github = __importStar(__nccwpck_require__(2165));
@@ -589,23 +623,32 @@ function pullRequestEventMoveCard() {
                     repoOwner: repository.owner,
                     repoName: repository.repo,
                 };
-                (0, api_github_1.addIssueComment)(commentData)
-                    .then((success) => {
-                    if (success) {
-                        verbose &&
-                            console.log(`Link to the Trello Card added to the PR: ${card.shortUrl}`);
-                    }
-                    else {
+                // Spread and desctruction of an object property.
+                const { comment } = commentData, issueLocator = __rest(commentData, ["comment"]);
+                if (!(0, utils_1.isIssueAlreadyLinkedTo)(card.shortUrl, issueLocator)) {
+                    (0, api_github_1.addIssueComment)(commentData)
+                        .then((success) => {
+                        if (success) {
+                            verbose &&
+                                console.log(`Link to the Trello Card added to the PR: ${card.shortUrl}`);
+                        }
+                        else {
+                            console.error(`Non-fatal error: Failed to add link to the Trello card.`);
+                        }
+                    })
+                        .catch(() => {
                         console.error(`Non-fatal error: Failed to add link to the Trello card.`);
+                    });
+                }
+                else {
+                    if (verbose) {
+                        console.log(`Link to the Trello Card was found in the comments, so adding it was skipped.`);
                     }
-                })
-                    .catch(() => {
-                    console.error(`Non-fatal error: Failed to add link to the Trello card.`);
-                });
+                }
             })
                 .catch((error) => {
                 console.error(error);
-                core.setFailed('Something went wrong when querying Cards to be moved.');
+                core.setFailed('Something went wrong when updating Cards to be moved to some new column.');
                 return [];
             });
         });
@@ -640,9 +683,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.cardHasPrLinked = exports.boardId = exports.validateListExistsOnBoard = exports.validateIdPattern = void 0;
+exports.isIssueAlreadyLinkedTo = exports.cardHasPrLinked = exports.boardId = exports.validateListExistsOnBoard = exports.validateIdPattern = void 0;
 const core = __importStar(__nccwpck_require__(3020));
+const api_github_1 = __nccwpck_require__(5518);
 const api_trello_1 = __nccwpck_require__(6445);
+const debug = process.env.GITHUB_API_DEBUG || true;
 const verbose = process.env.TRELLO_ACTION_VERBOSE || false;
 /**
  * Validate Trello entity id.
@@ -707,6 +752,34 @@ const cardHasPrLinked = (card, repoHtmlUrl) => {
     });
 };
 exports.cardHasPrLinked = cardHasPrLinked;
+const isIssueAlreadyLinkedTo = (findme, { issueNumber, repoOwner, repoName }) => {
+    return (0, api_github_1.getAllIssueComments)({ issueNumber: issueNumber, repoOwner: repoOwner, repoName: repoName })
+        .then((comments) => {
+        // comments is array of individual comments here.
+        if (!comments) {
+            debug &&
+                console.log('getAllIssueComments() returned a falsy dataset: ', JSON.stringify(comments, null, 2));
+            return undefined;
+        }
+        else if (!comments.length) {
+            debug &&
+                console.log('getAllIssueComments() returned a empty array: ', JSON.stringify(comments, null, 2));
+            return undefined;
+        }
+        debug &&
+            console.log('getAllIssueComments() returned a empty array: ', JSON.stringify(comments, null, 2));
+        return comments.some((comment) => comment.body && comment.body.match(findme));
+    })
+        .then((matcher) => {
+        debug && console.log('matcher returns: ', JSON.stringify(matcher, null, 2));
+        return matcher === undefined;
+    })
+        .catch((error) => {
+        console.error('Error locating the provided string in issue/pr comments: ' +
+            JSON.stringify(error, null, 2));
+    });
+};
+exports.isIssueAlreadyLinkedTo = isIssueAlreadyLinkedTo;
 //# sourceMappingURL=utils.js.map
 
 /***/ }),
