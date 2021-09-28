@@ -1,8 +1,9 @@
 import * as core from '@actions/core';
 import { getAllIssueComments } from './api-github';
 import { getCardAttachments, getListsOnBoard } from './api-trello';
-import { ghIssueData, TrelloCard } from './types';
+import { ghIssueData, ghResponseIssueComment, TrelloCard } from './types';
 
+const debug: string | boolean = process.env.GITHUB_API_DEBUG || true;
 const verbose: string | boolean = process.env.TRELLO_ACTION_VERBOSE || false;
 
 /**
@@ -77,14 +78,34 @@ const isIssueAlreadyLinkedTo = (
 ): Promise<boolean | void> => {
   return getAllIssueComments({ issueNumber: issueNumber, repoOwner: repoOwner, repoName: repoName })
     .then((comments) => {
-      if (!comments || !comments.length) {
+      // comments is array of individual comments here.
+      if (!comments) {
+        debug &&
+          console.log(
+            'getAllIssueComments() returned a falsy dataset: ',
+            JSON.stringify(comments, null, 2),
+          );
+        return undefined;
+      } else if (!(comments as []).length) {
+        debug &&
+          console.log(
+            'getAllIssueComments() returned a empty array: ',
+            JSON.stringify(comments, null, 2),
+          );
         return undefined;
       }
-      // TEMP for debugging.
-      return undefined;
-      // return comments.some((comment) => comment.body && comment.body.match(findme));
+      debug &&
+        console.log(
+          'getAllIssueComments() returned a empty array: ',
+          JSON.stringify(comments, null, 2),
+        );
+
+      return (comments as []).some(
+        (comment: ghResponseIssueComment) => comment.body && comment.body.match(findme),
+      );
     })
     .then((matcher) => {
+      debug && console.log('matcher returns: ', JSON.stringify(matcher, null, 2));
       return matcher === undefined;
     })
     .catch((error) => {
