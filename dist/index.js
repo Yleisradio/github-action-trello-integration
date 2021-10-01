@@ -91,11 +91,12 @@ const getAllIssueComments = ({ issueNumber, repoOwner, repoName }) => __awaiter(
         repo: repoName,
         issue_number: issueNumber,
     };
-    // https://docs.github.com/en/rest/reference/issues#list-issue-comments
     const issueComments = yield octokit.rest.issues.listComments(ghIssueData);
-    console.log(`getAllIssueComments with issue ${issueNumber}: `);
-    console.log(JSON.stringify(issueComments, null, 2));
-    return issueComments;
+    if (debug) {
+        console.log(`getAllIssueComments with issue ${issueNumber}: `);
+        console.log(JSON.stringify(issueComments, null, 2));
+    }
+    return issueComments.data || [];
 });
 exports.getAllIssueComments = getAllIssueComments;
 //# sourceMappingURL=api-github.js.map
@@ -757,22 +758,21 @@ const isIssueAlreadyLinkedTo = (findme, { issueNumber, repoOwner, repoName }) =>
         .then((comments) => {
         // comments is array of individual comments here.
         if (!comments) {
-            debug &&
+            if (debug) {
                 console.log('getAllIssueComments() returned a falsy dataset: ', JSON.stringify(comments, null, 2));
-            return undefined;
+            }
+            return false;
         }
         else if (!comments.length) {
-            debug &&
-                console.log('getAllIssueComments() returned a empty array: ', JSON.stringify(comments, null, 2));
-            return undefined;
+            if (debug) {
+                console.log('getAllIssueComments() returned a empty array');
+            }
+            return false;
         }
-        debug &&
-            console.log('getAllIssueComments() returned a empty array: ', JSON.stringify(comments, null, 2));
+        if (debug) {
+            console.log('getAllIssueComments() returned data: ', JSON.stringify(comments, null, 2));
+        }
         return comments.some((comment) => comment.body && comment.body.match(findme));
-    })
-        .then((matcher) => {
-        debug && console.log('matcher returns: ', JSON.stringify(matcher, null, 2));
-        return matcher === undefined;
     })
         .catch((error) => {
         console.error('Error locating the provided string in issue/pr comments: ' +
