@@ -772,7 +772,11 @@ const isIssueAlreadyLinkedTo = (findme, { issueNumber, repoOwner, repoName }) =>
         if (debug) {
             console.log('getAllIssueComments() returned data: ', JSON.stringify(comments, null, 2));
         }
-        return comments.some((comment) => comment.body && comment.body.match(findme));
+        const isLinked = comments.some((comment) => comment.body && comment.body.match(findme));
+        if (verbose) {
+            console.log(`String "${findme}" found in issue ${repoOwner}/${repoName}/${issueNumber} comments? ${isLinked ? 'yes' : 'no'}`);
+        }
+        return isLinked;
     })
         .catch((error) => {
         console.error('Error locating the provided string in issue/pr comments: ' +

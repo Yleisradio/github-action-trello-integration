@@ -96,9 +96,20 @@ const isIssueAlreadyLinkedTo = (
       if (debug) {
         console.log('getAllIssueComments() returned data: ', JSON.stringify(comments, null, 2));
       }
-      return (comments as []).some(
+
+      const isLinked = (comments as []).some(
         (comment: ghResponseIssueComment) => comment.body && comment.body.match(findme),
       );
+
+      if (verbose) {
+        console.log(
+          `String "${findme}" found in issue ${repoOwner}/${repoName}/${issueNumber} comments? ${
+            isLinked ? 'yes' : 'no'
+          }`,
+        );
+      }
+
+      return isLinked;
     })
     .catch((error) => {
       console.error(
