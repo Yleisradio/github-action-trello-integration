@@ -1,7 +1,9 @@
 import * as core from '@actions/core';
+import { getAllIssueComments } from './api-github';
 import { getCardAttachments, getListsOnBoard } from './api-trello';
-import { TrelloCard } from './types';
+import { ghIssueData, ghResponseIssueComment, TrelloCard } from './types';
 
+const debug: string | boolean = process.env.GITHUB_API_DEBUG || true;
 const verbose: string | boolean = process.env.TRELLO_ACTION_VERBOSE || false;
 
 /**
@@ -70,4 +72,56 @@ const cardHasPrLinked = (card: TrelloCard, repoHtmlUrl: string) => {
   });
 };
 
-export { validateIdPattern, validateListExistsOnBoard, boardId, cardHasPrLinked };
+const isIssueAlreadyLinkedTo = (
+  findme: string,
+  { issueNumber, repoOwner, repoName }: ghIssueData,
+): Promise<boolean | void> => {
+  return getAllIssueComments({ issueNumber: issueNumber, repoOwner: repoOwner, repoName: repoName })
+    .then((comments) => {
+      // comments is array of individual comments here.
+      if (!comments) {
+        if (debug) {
+          console.log(
+            'getAllIssueComments() returned a falsy dataset: ',
+            JSON.stringify(comments, null, 2),
+          );
+        }
+        return false;
+      } else if (!comments.length) {
+        if (debug) {
+          console.log('getAllIssueComments() returned a empty array');
+        }
+        return false;
+      }
+      if (debug) {
+        console.log('getAllIssueComments() returned data: ', JSON.stringify(comments, null, 2));
+      }
+
+      const isLinked = (comments as []).some(
+        (comment: ghResponseIssueComment) => comment.body && comment.body.match(findme),
+      );
+
+      if (verbose) {
+        console.log(
+          `String "${findme}" found in issue ${repoOwner}/${repoName}/${issueNumber} comments? ${
+            isLinked ? 'yes' : 'no'
+          }`,
+        );
+      }
+
+      return isLinked;
+    })
+    .catch((error) => {
+      console.error(
+        'Error locating the provided string in issue/pr comments: ' +
+          JSON.stringify(error, null, 2),
+      );
+    });
+};
+export {
+  validateIdPattern,
+  validateListExistsOnBoard,
+  boardId,
+  cardHasPrLinked,
+  isIssueAlreadyLinkedTo,
+};

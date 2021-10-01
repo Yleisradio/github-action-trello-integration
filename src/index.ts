@@ -13,7 +13,7 @@ import {
   addAttachmentToCard,
 } from './api-trello';
 import { TrelloCard, TrelloCardRequestParams } from './types';
-import { cardHasPrLinked, validateListExistsOnBoard } from './utils';
+import { cardHasPrLinked, isIssueAlreadyLinkedTo, validateListExistsOnBoard } from './utils';
 
 const verbose: string | boolean = process.env.TRELLO_ACTION_VERBOSE || false;
 const action = core.getInput('action');
@@ -237,22 +237,35 @@ function pullRequestEventMoveCard() {
               repoName: repository.repo,
             };
 
-            addIssueComment(commentData)
-              .then((success) => {
-                if (success) {
-                  verbose &&
-                    console.log(`Link to the Trello Card added to the PR: ${card.shortUrl}`);
-                } else {
+            // Spread and desctruction of an object property.
+            const { comment, ...issueLocator } = commentData;
+
+            if (!isIssueAlreadyLinkedTo(card.shortUrl, issueLocator)) {
+              addIssueComment(commentData)
+                .then((success) => {
+                  if (success) {
+                    verbose &&
+                      console.log(`Link to the Trello Card added to the PR: ${card.shortUrl}`);
+                  } else {
+                    console.error(`Non-fatal error: Failed to add link to the Trello card.`);
+                  }
+                })
+                .catch(() => {
                   console.error(`Non-fatal error: Failed to add link to the Trello card.`);
-                }
-              })
-              .catch(() => {
-                console.error(`Non-fatal error: Failed to add link to the Trello card.`);
-              });
+                });
+            } else {
+              if (verbose) {
+                console.log(
+                  `Link to the Trello Card was found in the comments, so adding it was skipped.`,
+                );
+              }
+            }
           })
           .catch((error) => {
             console.error(error);
-            core.setFailed('Something went wrong when querying Cards to be moved.');
+            core.setFailed(
+              'Something went wrong when updating Cards to be moved to some new column.',
+            );
             return [];
           });
       });

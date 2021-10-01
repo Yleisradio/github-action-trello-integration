@@ -1,5 +1,5 @@
 import * as github from '@actions/github';
-import { ghIssueCommentData, ghPullRequestCommentData } from './types';
+import { ghIssueCommentData, ghIssueData } from './types';
 
 const debug: string | boolean = process.env.GITHUB_API_DEBUG || true;
 const githubToken: string | undefined = process.env.GITHUB_TOKEN;
@@ -50,4 +50,31 @@ const addIssueComment = async ({
   return true;
 };
 
-export { addIssueComment };
+/**
+ * REST endpint to get all Issue (or PR) comments.
+ *
+ * @see https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository
+ */
+const getAllIssueComments = async ({ issueNumber, repoOwner, repoName }: ghIssueData) => {
+  if (!octokit) {
+    console.error('Octokit is not defined.');
+    !githubToken && console.error('GITHUB_TOKEN is falsy.');
+    return [];
+  }
+  const ghIssueData = {
+    owner: repoOwner,
+    repo: repoName,
+    issue_number: issueNumber,
+  };
+
+  const issueComments = await octokit.rest.issues.listComments(ghIssueData);
+
+  if (debug) {
+    console.log(`getAllIssueComments with issue ${issueNumber}: `);
+    console.log(JSON.stringify(issueComments, null, 2));
+  }
+
+  return issueComments.data || [];
+};
+
+export { addIssueComment, getAllIssueComments };
