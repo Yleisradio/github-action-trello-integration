@@ -66,11 +66,15 @@ const getAllIssueComments = async ({ issueNumber, repoOwner, repoName }: ghIssue
     repo: repoName,
     issue_number: issueNumber,
   };
-  // https://docs.github.com/en/rest/reference/issues#list-issue-comments
+
   const issueComments = await octokit.rest.issues.listComments(ghIssueData);
-  console.log(`getAllIssueComments with issue ${issueNumber}: `);
-  console.log(JSON.stringify(issueComments, null, 2));
-  return issueComments;
+
+  if (debug) {
+    console.log(`getAllIssueComments with issue ${issueNumber}: `);
+    console.log(JSON.stringify(issueComments, null, 2));
+  }
+
+  return issueComments.data || [];
 };
 
 export { addIssueComment, getAllIssueComments };

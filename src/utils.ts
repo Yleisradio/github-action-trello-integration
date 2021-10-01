@@ -80,33 +80,25 @@ const isIssueAlreadyLinkedTo = (
     .then((comments) => {
       // comments is array of individual comments here.
       if (!comments) {
-        debug &&
+        if (debug) {
           console.log(
             'getAllIssueComments() returned a falsy dataset: ',
             JSON.stringify(comments, null, 2),
           );
-        return undefined;
-      } else if (!(comments as []).length) {
-        debug &&
-          console.log(
-            'getAllIssueComments() returned a empty array: ',
-            JSON.stringify(comments, null, 2),
-          );
-        return undefined;
+        }
+        return false;
+      } else if (!comments.length) {
+        if (debug) {
+          console.log('getAllIssueComments() returned a empty array');
+        }
+        return false;
       }
-      debug &&
-        console.log(
-          'getAllIssueComments() returned a empty array: ',
-          JSON.stringify(comments, null, 2),
-        );
-
+      if (debug) {
+        console.log('getAllIssueComments() returned data: ', JSON.stringify(comments, null, 2));
+      }
       return (comments as []).some(
         (comment: ghResponseIssueComment) => comment.body && comment.body.match(findme),
       );
-    })
-    .then((matcher) => {
-      debug && console.log('matcher returns: ', JSON.stringify(matcher, null, 2));
-      return matcher === undefined;
     })
     .catch((error) => {
       console.error(
