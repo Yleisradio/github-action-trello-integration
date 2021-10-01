@@ -55,8 +55,8 @@ Required env variables include:
 Optional env variables include:
 
 - `TRELLO_ACTION_VERBOSE` to make action logs slightly more verbose.
-- `TRELLO_API_DEBUG` expose all API call resposes in action log.
-- `GITHUB_API_DEBUG` expose API call data in action log.
+- `TRELLO_API_DEBUG` expose Trello API call resposes in action log.
+- `GITHUB_API_DEBUG` expose Github API call data in action log.
 
 ### Pull requests and Cards referring to PR or issue
 
@@ -105,8 +105,8 @@ Optional env variables include:
 
 - `TRELLO_SOURCE_LIST_ID` The id of your Trello list (column) where you wish to limit searching the Card.
 - `TRELLO_ACTION_VERBOSE` to make action logs slightly more verbose.
-- `TRELLO_API_DEBUG` expose all API call resposes in action log.
-- `GITHUB_API_DEBUG` expose API call data in action log.
+- `TRELLO_API_DEBUG` expose Trello API call resposes in action log.
+- `GITHUB_API_DEBUG` expose Github API call data in action log.
 
 ## API key and token
 
@@ -132,5 +132,5 @@ yarn install
 yarn pre-release
 git add .
 git commit -m'Compiled new code'
-git tag -a 'Tagging new release v1.0.2' v1.0.2
+git tag -a 'Tagging new release v1.2.0' v1.2.0
 ```
